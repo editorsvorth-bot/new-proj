@@ -423,8 +423,9 @@ function spineBar(g, p, col, nums = 1, lab = [0, 0, 0], o = {}) {
   for (let s = 0; s < 3; s++) {
     const segP = prog(sp, s * 0.18, s * 0.18 + 0.55);
     if (segP > 0) fillPoly(g, rrectPoly(x + 4 * k, y, (ws[s] - 8 * k) * E.out(segP), h, 14 * k), col[s]);
-    if (nums > 0 && segP >= 1) {
-      g.save(); g.globalAlpha *= nums; g.font = font('head', Math.round(40 * k)); g.fillStyle = PAL.cream; g.textAlign = 'center'; g.textBaseline = 'middle';
+    const na = Array.isArray(nums) ? nums[s] : nums;
+    if (na > 0 && segP >= 1) {
+      g.save(); g.globalAlpha *= na; g.font = font('head', Math.round(40 * k)); g.fillStyle = PAL.cream; g.textAlign = 'center'; g.textBaseline = 'middle';
       g.fillText(['20%', '20%', '60%'][s], x + ws[s] / 2, y + h / 2 + 2); g.restore();
     }
     if (lab[s] > 0 && !o.noLabels) subline(g, GROUP[s], x + ws[s] / 2, y + h + 52, lab[s], 0, { face: 'label', size: 30, align: 'center', color: col[s] === PAL.red ? PAL.red : PAL.ink });
@@ -435,7 +436,7 @@ function spineBar(g, p, col, nums = 1, lab = [0, 0, 0], o = {}) {
 function miniBar(g, focus, p, tagText) {
   if (p <= 0) return;
   fadeAlpha(g, E.out(p), () => {
-    spineBar(g, 1, [0, 1, 2].map(i => i === focus ? PAL.red : rgba(PAL.ink, .85)), 1, [0, 0, 0], { x: 1300, y: 120, w: 480, h: 44, noLabels: true });
+    spineBar(g, 1, [0, 1, 2].map(i => i === focus ? PAL.red : rgba(PAL.ink, .85)), 0, [0, 0, 0], { x: 1300, y: 120, w: 480, h: 44, noLabels: true });
     if (tagText) subline(g, tagText, 1300 + 480 * [0.1, 0.3, 0.7][focus], 210, 1, 0, { face: 'label', size: 26, align: 'center', color: PAL.red });
   });
 }
@@ -469,12 +470,55 @@ function featureCard(g, x, y, p, crossP) {
   });
   crossMark(g, x + 170, y + 120, 120, crossP, 20);
 }
+/* ---------------- wearables: hats, glasses, bags (all drawn in code, palette only) ---------------- */
+const WEAR = ['bucket', 'capBack', 'specs', 'specs', 'beanie', 'bun', 'cap', 'none', 'bun', 'beanie']; // crowd slot -> look
+function wear(g, F, r, kinds) {
+  if (!r || !kinds) return; const list = [].concat(kinds).filter(k => k && k !== 'none'); if (!list.length) return;
+  const P = F.pose || POSES.stand, fac = F.facing || 1, s = F.s || 1, body = F.color || PAL.ink;
+  const dark = body === PAL.ink, hatC = dark ? PAL.gray : PAL.ink, ang = rad((P.head || 0) + (P.lean || 0) * .5) * fac;
+  g.save(); g.globalAlpha *= F.alpha ?? 1; g.translate(r.head[0], r.head[1]); g.rotate(ang); g.scale(s, s);
+  for (const k of list) {
+    if (k === 'cap' || k === 'capBack') { const d = k === 'cap' ? fac : -fac;
+      g.beginPath(); g.arc(0, -6, 39, Math.PI, 0); g.closePath(); g.fillStyle = hatC; g.fill();
+      fillPoly(g, rrectPoly(d > 0 ? 18 : -70, -14, 52, 11, 5), hatC); g.beginPath(); g.arc(0, -45, 5, 0, 7); g.fill(); }
+    if (k === 'beanie') { g.beginPath(); g.arc(0, -8, 40, Math.PI, 0); g.closePath(); g.fillStyle = hatC; g.fill();
+      fillPoly(g, rrectPoly(-42, -16, 84, 14, 6), hatC); g.fillStyle = PAL.cream; g.fillRect(-40, -12, 80, 3);
+      g.beginPath(); g.arc(0, -52, 11, 0, 7); g.fillStyle = hatC; g.fill(); }
+    if (k === 'bucket') { fillPoly(g, [[-28, -58], [28, -58], [36, -22], [-36, -22]], hatC); fillPoly(g, rrectPoly(-52, -26, 104, 12, 6), hatC); }
+    if (k === 'bun') { g.beginPath(); g.arc(-fac * 18, -40, 16, 0, 7); g.fillStyle = dark ? PAL.gray : PAL.ink; g.fill(); }
+    if (k === 'specs') { const ex = fac * 8, c = dark ? PAL.cream : PAL.ink; g.lineWidth = 4; g.strokeStyle = c;
+      [[ex - 9, -6], [ex + 11, -6]].forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 9.5, 0, 7); g.stroke(); });
+      g.beginPath(); g.moveTo(ex - 0.5, -7); g.lineTo(ex + 1.5, -7); g.moveTo(ex - (fac > 0 ? 18.5 : -20.5), -7); g.lineTo(-fac * 32, -12); g.stroke(); }
+  }
+  g.restore();
+}
+/** Any figure + its wearables (F.wear). */
+function person(g, F) { const r = drawStickman(g, F); wear(g, F, r, F.wear); return r; }
+/** Briefcase standing on the ground (SALES), or carried at a hand point. */
+function briefcase(g, x, y, s = 1, a = 1) {
+  if (a <= 0) return; fadeAlpha(g, a, () => {
+    g.save(); g.translate(x, y); g.scale(s, s);
+    g.lineWidth = 7; g.strokeStyle = PAL.ink; g.beginPath(); g.arc(0, -56, 14, Math.PI, 0); g.stroke();
+    fillPoly(g, rrectPoly(-42, -56, 84, 56, 10), PAL.ink); g.fillStyle = PAL.cream; g.fillRect(-42, -36, 84, 4); g.fillRect(-6, -40, 12, 10);
+    g.restore(); });
+}
+/** Shopping bag held at a hand point (the Definitely Buy purchase), product peeking out. */
+function shopBag(g, hx, hy, s = 1, q = 1) {
+  if (q <= 0) return; popAt(g, hx, hy, E.back(clamp(q)), () => {
+    g.save(); g.translate(hx, hy); g.scale(s, s);
+    fillPoly(g, rrectPoly(-18, 4, 30, 24, 4), PAL.ink); fillPoly(g, rrectPoly(-6, 4, 7, 24, 2), PAL.red);
+    fillPoly(g, [[-34, 22], [34, 22], [28, 92], [-28, 92]], PAL.cream);
+    tracePoly(g, [[-34, 22], [34, 22], [28, 92], [-28, 92]]); g.lineWidth = 6; g.strokeStyle = PAL.ink; g.stroke();
+    g.beginPath(); g.moveTo(-16, 22); g.quadraticCurveTo(0, -6, 16, 22); g.stroke();
+    g.restore(); });
+}
+
 /* ---------------- character kits: each group acts like the script describes it ---------------- */
 function neckOf(F, r) { const P = F.pose || POSES.stand, L = rad(P.lean || 0), fac = F.facing || 1, hd = (RIG.neck + RIG.head) * (F.s || 1);
   return [r.head[0] - Math.sin(L) * hd * fac, r.head[1] + Math.cos(L) * hd]; }
 /** SALES: ink figure with a red tie (knot + blade follow the torso). */
 function salesman(g, F) {
-  const r = drawStickman(g, Object.assign({ color: PAL.ink }, F)); if ((F.draw ?? 1) < .6) return r;
+  const r = person(g, Object.assign({ color: PAL.ink }, F)); if ((F.draw ?? 1) < .6) return r;
   const s = F.s || 1, n = neckOf(F, r), h = r.hip, L = Math.hypot(h[0] - n[0], h[1] - n[1]) || 1, ux = (h[0] - n[0]) / L, uy = (h[1] - n[1]) / L, px = -uy, py = ux;
   const P = (a, b) => [n[0] + ux * a * s + px * b * s, n[1] + uy * a * s + py * b * s];
   g.save(); g.globalAlpha *= F.alpha ?? 1;
@@ -484,7 +528,7 @@ function salesman(g, F) {
 }
 /** NEVER BUY: pockets turned inside out ("can't pay"), popping in with pk 0..1. */
 function neverBuyer(g, F, pk = 1) {
-  const r = drawStickman(g, F); if (pk <= 0) return r;
+  const r = person(g, F); if (pk <= 0) return r;
   const s = (F.s || 1) * 1.35, q = E.back(clamp(pk));
   [-1, 1].forEach((d, i) => {
     const x = r.hip[0] + d * 22 * s, y = r.hip[1] + 6 * s, sw = Math.sin((F.t || 0) * 3 + i) * .12;
@@ -497,7 +541,7 @@ function neverBuyer(g, F, pk = 1) {
 }
 /** DEFINITELY BUY: phone in hand with a ticked screen (already researched, already decided). */
 function sureBuyer(g, F, ph = 1) {
-  const r = drawStickman(g, F); if (ph <= 0) return r;
+  const r = person(g, F); if (ph <= 0) return r;
   const s = F.s || 1, q = E.back(clamp(ph)), [hx, hy] = r.handF;
   popAt(g, hx, hy - 18 * s, q, () => {
     fillPoly(g, rrectPoly(hx - 17 * s, hy - 48 * s, 34 * s, 58 * s, 8 * s), PAL.ink);
@@ -539,7 +583,7 @@ function buildScenes() {
 
   SCENES = [
     /* 1. THE 20-20-60 SPLIT  (cues 1-3)  ten buyers -> the bar splits 20 | 20 | 60 -> first 20% = NEVER BUY */
-    { id: 'split', start: 0, end: cue(4),
+    { id: 'split', start: 0, end: cue(4) - .001,
       camera: t => tween([[0, { x: 0, y: 30, z: 1.06 }], [2.2, { x: 0, y: 0, z: 1 }], [cue(3) + .4, { x: 0, y: 0, z: 1 }], [cue(3) + 2.4, { x: -540, y: 80, z: 1.3 }]], t),
       draw(g, t, T, c) {
         dotGrid(g, c);
@@ -547,14 +591,15 @@ function buildScenes() {
         world(g, c, () => {
           groundLine(g, GY, prog(t, 0, .8));
           const col = [mix(0, 1, red0) > .5 ? PAL.red : PAL.ink, rgba(PAL.ink, 1 - .55 * red0), rgba(PAL.ink, 1 - .55 * red0)];
-          spineBar(g, prog(t, cue(2), cue(2) + 1.2), col, prog(t, cue(2) + 1.0, cue(2) + 1.6), [prog(t, cue(3) + .3, cue(3) + 1.0), 0, 0]);
+          const nA = prog(t, cue(2) + 1.0, cue(2) + 1.6), nOut = 1 - prog(t, cue(3) + .3, cue(3) + .8);
+          spineBar(g, prog(t, cue(2), cue(2) + 1.2), col, [nA, nA * nOut, nA * nOut], [prog(t, cue(3) + .3, cue(3) + 1.0), 0, 0]);
           for (let i = 0; i < 10; i++) {
             const x = SLOT(i), kf = [[.15 + i * .1, x - 1300], [2.0 + i * .06, x, E.out]];
             const g0 = i < 2, rest = g0 ? poseMix(POSES.stand, POSES.cross, E.inOut(prog(t, cue(3) + .4, cue(3) + 1.0))) : POSES.stand;
             const w = walker(kf, t, .75, rest, 1);
             const colr = g0 ? (red0 > .5 ? PAL.red : PAL.ink) : rgba(PAL.ink, 1 - .55 * red0);
-            const F = { x: w.x, y: GY, s: .75, pose: idle(w.pose, t, i), facing: w.facing, color: colr, expr: 'neutral', t };
-            if (g0) neverBuyer(g, F, prog(t, cue(3) + 1.2, cue(3) + 1.7)); else drawStickman(g, F);
+            const F = { x: w.x, y: GY, s: .75, pose: idle(w.pose, t, i), facing: w.facing, color: colr, expr: 'neutral', t, wear: WEAR[i] };
+            if (g0) neverBuyer(g, F, prog(t, cue(3) + 1.2, cue(3) + 1.7)); else person(g, F);
           }
         });
         subline(g, 'Let me explain it with a diagram', 960, 210, prog(t, .3, .9), prog(t, cue(2) - .3, cue(2)), { align: 'center', size: 44, color: PAL.gray, face: 'label' });
@@ -563,8 +608,9 @@ function buildScenes() {
       } },
 
     /* 2. NEVER BUY  (cues 4-7)  nobody knows why they're here; no need, can't pay; won't buy; sales not needed */
-    { id: 'never', start: cue(4) - TR, end: cue(8), enter: { type: 'iris', x: 400, y: 640, dur: TR },
-      camera: t => tween([[0, { x: 0, y: 0, z: 1.08 }], [2.2, { x: 0, y: 0, z: 1 }]], t),
+    { id: 'never', start: cue(4) - TR, end: cue(8) - .001, enter: { type: 'iris', x: 400, y: 640, dur: TR },
+      camera: t => { const a = t + cue(4) - TR; return tween([[cue(4) - TR, { x: 0, y: 0, z: 1.08 }], [cue(4) + 1.5, { x: 0, y: 0, z: 1 }], [cue(6) + 1.0, { x: 0, y: 0, z: 1 }],
+        [cue(6) + 2.6, { x: -60, y: 70, z: 1.12 }], [cue(7) + .2, { x: -60, y: 70, z: 1.12 }], [cue(7) + 1.4, { x: 0, y: 0, z: 1 }]], a); },
       draw(g, t0, T, c) {
         const t = t0 + cue(4) - TR; dotGrid(g, c);
         const hx = 620, usKf = [[cue(6), 1420], [cue(6) + 1.4, 1060, E.out]];
@@ -579,7 +625,7 @@ function buildScenes() {
           hp = poseMix(hp, POSES.cross, E.inOut(prog(t, cue(6) + 3.7, cue(6) + 4.2)));     // turns away, arms crossed
           const hexpr = t < cue(5) ? 'confused' : (t > cue(6) + 1.0 ? 'angry' : 'neutral');
           const hface = t > cue(6) + 3.8 ? -1 : 1;
-          const hr = neverBuyer(g, { x: hx, y: GY, s: 1.15, pose: idle(hp, t, 1), facing: hface, color: PAL.red, expr: hexpr, t }, prog(t, cue(5) + 1.3, cue(5) + 1.9));
+          const hr = neverBuyer(g, { x: hx, y: GY, s: 1.15, pose: idle(hp, t, 1), facing: hface, color: PAL.red, expr: hexpr, t, wear: 'bucket' }, prog(t, cue(5) + 1.3, cue(5) + 1.9));
           // us (ink): a salesperson, labelled US
           const uw = walker(usKf, t, 1.15, POSES.reach, -1);
           let up = t < cue(6) ? poseMix(POSES.stand, POSES.shrug, E.inOut(prog(t, cue(4) + .5, cue(4) + 1.0))) : uw.pose;
@@ -587,6 +633,7 @@ function buildScenes() {
           const ux = t < cue(6) ? 1420 : uw.x;
           const ur = salesman(g, { x: ux, y: GY, s: 1.15, pose: idle(up, t, 2), facing: -1, expr: t > cue(7) ? 'sad' : (t < cue(5) ? 'confused' : 'happy') });
           tag(g, 'SALES', ux, GY + 70, prog(t, cue(4) + .4, cue(4) + .8), { size: 30 });
+          briefcase(g, 1520, GY, 1, 1);
           tag(g, 'NEVER BUY', hx, GY + 70, prog(t, cue(4) + .2, cue(4) + .6), { size: 30, bg: PAL.red });
           // cue 4: "?" for both of them
           const qOut = 1 - prog(t, cue(5) - .3, cue(5));
@@ -621,7 +668,7 @@ function buildScenes() {
       } },
 
     /* 3. DEFINITELY BUY  (cues 8-12)  like an Amazon buyer: decide -> see the product -> search ... features -> purchase */
-    { id: 'definite', start: cue(8) - TR, end: cue(13), enter: { type: 'wipe', dur: TR },
+    { id: 'definite', start: cue(8) - TR, end: cue(13) - .001, enter: { type: 'wipe', dur: TR },
       camera: t => tween([[0, { x: 0, y: 0, z: 1.06 }], [2.2, { x: 0, y: 0, z: 1 }], [cue(11) - cue(8) + TR, { x: 0, y: 0, z: 1 }], [cue(11) - cue(8) + TR + 1.6, { x: 90, y: 30, z: 1.06 }]], t),
       draw(g, t0, T, c) {
         const t = t0 + cue(8) - TR; dotGrid(g, c);
@@ -633,8 +680,9 @@ function buildScenes() {
           pose = poseMix(pose, POSES.think, E.inOut(prog(t, cue(9) + .8, cue(9) + 1.3)));
           pose = poseMix(pose, POSES.point, E.inOut(prog(t, cue(10) + .6, cue(10) + 1.1)));
           pose = poseMix(pose, POSES.reach, E.inOut(prog(t, cue(12) + .1, cue(12) + .5)));
-          pose = poseMix(pose, POSES.cheer, E.inOut(prog(t, cue(12) + 1.0, cue(12) + 1.5)));
-          drawStickman(g, { x: w.x, y: GY, s: 1.15, pose: idle(pose, t, 3), facing: 1, color: PAL.red, expr: t > cue(12) + 1.0 ? 'happy' : 'neutral' });
+          pose = poseMix(pose, POSES.cheer, E.inOut(prog(t, cue(12) + .6, cue(12) + 1.0)) * (1 - E.inOut(prog(t, cue(12) + 1.6, cue(12) + 2.1))));   // quick cheer, then holds the bag
+          const hr3 = person(g, { x: w.x, y: GY, s: 1.15, pose: idle(pose, t, 3), facing: 1, color: PAL.red, expr: t > cue(12) + 1.0 ? 'happy' : 'neutral', wear: 'specs' });
+          shopBag(g, hr3.handF[0], hr3.handF[1], 1, prog(t, cue(12) + 1.9, cue(12) + 2.3));
           browserWin(g, SX, SY, SW, SH, 'AMAZON', prog(t, cue(9) + .2, cue(9) + .8), (x, y, w2, h2) => {
             const rows = [['DECIDE: I WANT IT', cue(10) + .2], ['SEE THE PRODUCT', cue(10) + 2.4], ['SEARCH', cue(11) + .1], ['DESCRIPTION', cue(11) + 1.1], ['DETAILS', cue(11) + 2.4], ['FEATURES', cue(11) + 3.6]];
             rows.forEach(([s, a], i) => checkRow(g, s, x + 40, y + 46 + i * 60, prog(t, a, a + .6), { size: 32 }));
@@ -654,8 +702,9 @@ function buildScenes() {
       } },
 
     /* 4. THEY COME TO US AS A LEAD  (cues 13-16)  about us, what we sell -> lead -> no feature selling -> what + how much -> buy */
-    { id: 'lead', start: cue(13) - TR, end: cue(17), enter: { type: 'iris', x: 1340, y: 560, dur: TR },
-      camera: t => tween([[0, { x: 0, y: 0, z: 1.08 }], [2.2, { x: 0, y: 0, z: 1 }]], t),
+    { id: 'lead', start: cue(13) - TR, end: cue(17) - .001, enter: { type: 'iris', x: 1340, y: 560, dur: TR },
+      camera: t => { const a = t + cue(13) - TR; return tween([[cue(13) - TR, { x: 0, y: 0, z: 1.08 }], [cue(13) + 1.5, { x: 0, y: 0, z: 1 }], [cue(14) + 1.6, { x: 0, y: 0, z: 1 }],
+        [cue(14) + 3.8, { x: 40, y: 30, z: 1.03 }], [cue(15) + .2, { x: 40, y: 30, z: 1.03 }], [cue(15) + 1.4, { x: 0, y: 0, z: 1 }]], a); },
       draw(g, t0, T, c) {
         const t = t0 + cue(13) - TR; dotGrid(g, c);
         world(g, c, () => {
@@ -669,7 +718,7 @@ function buildScenes() {
           const w = walker([[cue(14) + 1.6, 860], [cue(14) + 3.8, 1180, E.out]], t, 1.1, POSES.stand, 1);
           let pose = poseMix(w.pose, POSES.think, E.inOut(prog(t, cue(13) + .4, cue(13) + .9)) * (1 - prog(t, cue(14) + 1.0, cue(14) + 1.5)));
           pose = poseMix(pose, POSES.cheer, E.inOut(prog(t, cue(16) + 2.6, cue(16) + 3.1)));
-          const hr = sureBuyer(g, { x: w.x, y: GY, s: 1.1, pose: idle(pose, t, 4), facing: t < cue(14) + 1.2 ? -1 : 1, color: PAL.red, expr: t > cue(14) + .9 ? 'happy' : 'neutral' },
+          const hr = sureBuyer(g, { x: w.x, y: GY, s: 1.1, pose: idle(pose, t, 4), facing: t < cue(14) + 1.2 ? -1 : 1, color: PAL.red, expr: t > cue(14) + .9 ? 'happy' : 'neutral', wear: 'specs' },
             prog(t, cue(14) + 1.0, cue(14) + 1.6) * (1 - prog(t, cue(16) + 2.4, cue(16) + 2.6)));
           tag(g, 'LEAD', w.x, hr.head[1] - 110, prog(t, cue(14) + 3.6, cue(14) + 4.1) * (1 - prog(t, cue(16) - .3, cue(16))), { bg: PAL.red, size: 40 });
           // us
@@ -677,6 +726,7 @@ function buildScenes() {
           up = poseMix(up, POSES.point, E.inOut(prog(t, cue(16), cue(16) + .5)));
           const ur = salesman(g, { x: 1560, y: GY, s: 1.1, pose: idle(up, t, 5), facing: -1, expr: t > cue(16) + 2.6 ? 'happy' : 'neutral' });
           tag(g, 'SALES', 1560, GY + 70, prog(t, cue(13) + .3, cue(13) + .7), { size: 30 });
+          briefcase(g, 1690, GY, 1, 1);
           featureCard(g, 220, 440, prog(t, cue(15) + .2, cue(15) + .7) * (1 - prog(t, cue(16) - .3, cue(16))), prog(t, cue(15) + 2.0, cue(15) + 2.8));
           speechBubble(g, 'WHAT IT IS', 1500, 320, ur.head[0] - 30, ur.head[1] - 20, prog(t, cue(16) + .2, cue(16) + .6), { size: 34 });
           speechBubble(g, 'HOW MUCH', 1250, 410, ur.head[0] - 60, ur.head[1] - 30, prog(t, cue(16) + 1.4, cue(16) + 1.8), { size: 34 });
@@ -696,8 +746,9 @@ function buildScenes() {
       } },
 
     /* 5. CONFUSED BUYERS  (cues 17-20)  the bar returns; the 60% light up; their five questions */
-    { id: 'confused', start: cue(17) - TR, end: cue(21), enter: { type: 'wipe', dur: TR },
-      camera: t => tween([[0, { x: 0, y: 0, z: 1.05 }], [2.0, { x: 0, y: 0, z: 1 }]], t),
+    { id: 'confused', start: cue(17) - TR, end: cue(21) - .001, enter: { type: 'wipe', dur: TR },
+      camera: t => { const a = t + cue(17) - TR; return tween([[cue(17) - TR, { x: 0, y: 0, z: 1.05 }], [cue(17) + 1.3, { x: 0, y: 0, z: 1 }], [cue(18), { x: 0, y: 0, z: 1 }],
+        [cue(18) + 1.2, { x: 40, y: 30, z: 1.06 }], [cue(20), { x: 120, y: 30, z: 1.06 }], [cue(21), { x: 60, y: 20, z: 1.03 }]], a); },
       draw(g, t0, T, c) {
         const t = t0 + cue(17) - TR; dotGrid(g, c);
         const r6 = prog(t, cue(17), cue(17) + .6);
@@ -709,8 +760,8 @@ function buildScenes() {
             const conf = i >= 4, on = conf ? E.inOut(prog(t, cue(17) + .4 + (i - 4) * .1, cue(17) + 1.0 + (i - 4) * .1)) : 0;
             const pc = pacing(SLOT(i), t, i, on);
             const F = { x: conf ? pc.x : SLOT(i), y: GY, s: .75, pose: idle(conf ? pc.pose : (i < 2 ? POSES.cross : POSES.stand), t, i), facing: conf ? pc.facing : 1,
-              color: conf ? (r6 > .5 ? PAL.red : PAL.ink) : rgba(PAL.gray, .9), expr: conf && t > cue(17) + .5 ? 'confused' : 'neutral', t };
-            const r = conf ? drawStickman(g, F) : (i < 2 ? neverBuyer(g, F, 1) : sureBuyer(g, F, 1));
+              color: conf ? (r6 > .5 ? PAL.red : PAL.ink) : rgba(PAL.gray, .9), expr: conf && t > cue(17) + .5 ? 'confused' : 'neutral', t, wear: WEAR[i] };
+            const r = conf ? person(g, F) : (i < 2 ? neverBuyer(g, F, 1) : sureBuyer(g, F, 1));
             heads.push(r.head);
           }
           const Q = [['Do I need it?', 760, 470, 4, cue(18) + .1], ['Buy it from whom?', 1180, 360, 6, cue(18) + 2.6],
@@ -722,7 +773,8 @@ function buildScenes() {
 
     /* 6. WHY SALES EXISTS  (cues 21-24)  a knot of confusions -> help arrives -> knot straightens -> clarity, decision */
     { id: 'clarity', start: cue(21) - TR, end: cue(25), enter: { type: 'iris', x: 1180, y: 460, dur: TR },
-      camera: t => tween([[0, { x: 0, y: 0, z: 1.08 }], [2.2, { x: 0, y: 0, z: 1 }]], t),
+      camera: t => { const a = t + cue(21) - TR; return tween([[cue(21) - TR, { x: 0, y: 0, z: 1.08 }], [cue(21) + 1.5, { x: 0, y: 0, z: 1 }], [cue(23), { x: 0, y: 0, z: 1 }],
+        [cue(23) + 1.2, { x: 120, y: 60, z: 1.08 }], [cue(24) + .2, { x: 120, y: 60, z: 1.08 }], [cue(24) + 1.6, { x: 0, y: 0, z: 1 }]], a); },
       draw(g, t0, T, c) {
         const t = t0 + cue(21) - TR; dotGrid(g, c);
         const un = E.inOut(prog(t, cue(23) + .4, cue(23) + 1.8)), clear = t > cue(24) + .4;
@@ -732,7 +784,7 @@ function buildScenes() {
           for (let i = 0; i < 6; i++) {
             const calm = E.inOut(prog(t, cue(24) + .2 + i * .08, cue(24) + .8 + i * .08)), pc = pacing(640 + i * 128, t, i, 1 - calm);
             const pose = poseMix(pc.pose, i % 2 ? POSES.cheer : POSES.stand, calm);
-            const r = drawStickman(g, { x: pc.x, y: GY, s: .8, pose: idle(pose, t, i), facing: calm > .5 ? 1 : pc.facing, color: PAL.red, expr: clear ? 'happy' : 'confused' });
+            const r = person(g, { x: pc.x, y: GY, s: .8, pose: idle(pose, t, i), facing: calm > .5 ? 1 : pc.facing, color: PAL.red, expr: clear ? 'happy' : 'confused', wear: WEAR[4 + i] });
             heads.push(r.head);
           }
           // SALES arrives, grabs the loose end of the tangle and pulls it straight
@@ -750,7 +802,7 @@ function buildScenes() {
           if (grab > 0) strokeOn(g, [KNOT[KN - 1], hand], grab, PAL.ink, 6);
           const mid = line[Math.floor(KN / 2)];
           tag(g, 'CLARITY', mid[0], mid[1] - 70, prog(t, cue(24) + .1, cue(24) + .6), { size: 44, bg: PAL.red });
-          heads.forEach((h, i) => badge(g, h[0], h[1] - 70, prog(t, cue(24) + 1.3 + i * .12, cue(24) + 1.8 + i * .12), 'tick', PAL.red, PAL.cream, 22));
+          heads.forEach((h, i) => badge(g, h[0], h[1] - 100, prog(t, cue(24) + 1.3 + i * .12, cue(24) + 1.8 + i * .12), 'tick', PAL.red, PAL.cream, 22));
         });
         const hA = (a, b) => 1 - prog(t, a, b);
         fadeAlpha(g, hA(cue(22) - .3, cue(22)), () => {

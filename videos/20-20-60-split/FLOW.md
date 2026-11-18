@@ -67,6 +67,10 @@ The salesperson is the script's *namma* (we/us), labelled **SALES** (the script'
   - **Never Buy:** pockets turned inside out ("can't pay"), arms crossed, turns their back when pitched ("won't buy").
   - **Definitely Buy:** phone in hand with a ticked screen (researched online, arrives decided).
   - **Confused:** paces on the spot, turns left/right, alternates head-scratch and shrug.
+- **Wearables (drawn in code):** SALES has a red tie and a briefcase. Never Buy wears a bucket hat or backwards cap.
+  Definitely Buy wears glasses and leaves with a shopping bag. The Confused crowd mixes beanies, caps and hair buns (`WEAR` in scenes.js).
+- **Camera:** push into the two-shot during the pitch (cue 6), track the walk to SALES (cue 14), track along the questions (cues 18–20),
+  push in on the pull (cue 23), then pull back for the resolution (cue 24).
 - **Props (drawn in code):** a browser window (AMAZON, then OUR WEBSITE) with a ticking checklist, a FEATURES card
   that gets crossed out, and a tangle of confusion that straightens into an arrow.
 - **Faces carry the script's feelings:** confused on cue 4 and cues 17–22, sad when effort is wasted (cue 7), happy on purchase and clarity.
@@ -87,6 +91,13 @@ The salesperson is the script's *namma* (we/us), labelled **SALES** (the script'
 - Every scene is fully open on its cue and ends on a cue (6/6). Hand-offs line up, and the duration equals the SRT end (103.686 s).
 - 24 subtitle cues loaded from the SRT. All 18 storyboard frames render, with no console errors.
 - QA grid on resting frames + transition midpoints: one collision fixed (cue 16 tick over the HOW MUCH bubble).
+
+## 6b. Frame audit (`tools/frame_audit.js`, every 0.25 s, 403 frames)
+
+Checks text over text, text over a figure, text under 24 px at 1080p, and text outside a 40 px margin.
+Fixed: "60%" cut off during the cue 3 push, unreadable numbers on the corner bar, and a double-drawn frame at each scene boundary
+(scenes now end 1 ms before the next cue). Remaining: two single-frame pop-ins (labels mid-scale for about 0.1 s), which is intended.
+Shape overlaps (bag over face, ticks on hats, window cut off by the camera) were found on the QA grid and fixed.
 
 ## 7. Commands
 
