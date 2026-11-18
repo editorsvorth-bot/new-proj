@@ -1,0 +1,94 @@
+# The 20-20-60 Split: production flow (gen-stickman-v2, SRT-timed)
+
+This is the kit's playbook applied to `20-20-60.srt`, with one addition: **the SRT is the master clock**.
+Every scene opens fully on a cue start, and every reveal is written as `cue(n) + offset`.
+
+## 1. Config (resolved)
+
+```
+gen-stickman-v2
+Script: 20-20-60.srt (24 cues, Tanglish)
+- Storyboard: Enabled          (stop for APPROVED before Stage 2)
+- Voiceover: Disabled          (no audio file yet; timing comes from the SRT instead)
+- Subtitles: Disabled          (CUES are already filled from the SRT; switch on with --subtitles on)
+- Duration: 103.686 s          (= end of SRT cue 24, not the kit's 90 s default)
+- Format: Horizontal 16:9, 1920 × 1080, 30 fps
+- Background music: Enabled    (accents on cues 2, 3, 8, 12, 17, 23, 24)
+- Sound effects: Disabled
+- Final video: MP4
+```
+
+## 2. SRT sync (the addition to the kit)
+
+1. `python tools/srt_sync.py videos/20-20-60-split/20-20-60.srt videos/20-20-60-split/scenes.js`
+   writes `C` (cue start times) and `SRT_TEXT` into the scenes file. Re-run it if the SRT changes.
+2. In `scenes.js`, `cue(n)` = start of cue n. Times are never typed as raw numbers.
+3. Scene k starts at `cue(first) − 0.7 s` with a 0.7 s iris or wipe, so it is **fully open on its cue**.
+   The previous scene ends on that same cue.
+4. Build with `--duration 103.686` (the value `srt_sync.py` prints).
+
+## 3. Idea units → on-screen words (Rule 1: script only)
+
+| Cue | Time | Script (excerpt) | Meaning | On-screen words |
+|---|---|---|---|---|
+| 1 | 0:00.0 | Idha konjam diagrammatic-ah explain panren | Let me explain with a diagram | *Let me explain it with a diagram* |
+| 2 | 0:02.4 | 20-20-60 split-nu solluvaanga | It's called the 20-20-60 split | **THE 20-20-60 SPLIT** · 20% 20% 60% |
+| 3 | 0:04.9 | first 20 percentage … Never Buy | First 20% are Never Buy | **20% NEVER BUY** |
+| 4 | 0:10.5 | yen inga irukkaanga-nu avangalukkum theriyaadhu, namakkum theriyaadhu | Neither they nor we know why they're here | **WHY ARE THEY HERE?** *They don't know. We don't know.* · US |
+| 5 | 0:13.8 | need irukkaadhu, pay panna mudiyaadhu | No need, can't pay | **NO NEED. CAN'T PAY.** |
+| 6 | 0:16.8 | evlo kashtappattu sell pannaalum … vaanga maattaanga | However hard we sell, they won't buy | **THEY WON'T BUY** *However hard we sell* |
+| 7 | 0:21.5 | efforts poduradhu … waste of time; sales thevaiye kidaiyaadhu | Effort is wasted; no sales needed | **SALES? NOT NEEDED.** *Our effort here = waste of time* |
+| 8 | 0:26.4 | innoru 20 percentage … Definitely Buy | Next 20% are Definitely Buy | **20% DEFINITELY BUY** |
+| 9 | 0:29.6 | Amazon purchasers maadhiri | Like Amazon buyers | **LIKE AN AMAZON BUYER** · AMAZON (text only, no logo) |
+| 10 | 0:35.0 | vaangurom—cart-la podrathu kidaiyaadhu … decide pannuvom, product-ah paappom | Really buy, not cart; decide; look at it | *Really buying, not just adding to cart* · DECIDE: I WANT IT · SEE THE PRODUCT |
+| 11 | 0:39.8 | search, description, details, features | They check everything | SEARCH · DESCRIPTION · DETAILS · FEATURES |
+| 12 | 0:44.8 | nallaa irukkaa, purchase pannittu | It's good → purchase, done | PURCHASE · *Looks good → purchase → done* |
+| 13 | 0:48.0 | Adhe maadhiri … namma website, namma enna sell panrom | Same with us: about us, our website, what we sell | **SAME WITH US** *They check everything about us* · OUR WEBSITE · ABOUT US · WHAT WE SELL |
+| 14 | 0:52.5 | namma dhaan venum … decide pannittu … lead-ah vandhiruppaanga | Decided they want us; come as a lead | DECIDED ON US · **THEY COME AS A LEAD** · LEAD |
+| 15 | 0:58.0 | features-ah kashtappattu sell pannanum … avasiyamum kidaiyaadhu | No need to hard-sell features | **NO NEED TO SELL FEATURES** · FEATURES (crossed out) |
+| 16 | 1:03.2 | Enna irukku, evlo-nu sonnaa podhum, kandippaa vaangirvaanga | Say what it is and how much; they'll buy | **THEY'LL SURELY BUY** *Just say what it is and how much* · WHAT IT IS · HOW MUCH · DEFINITELY BUY |
+| 17 | 1:08.5 | 60 percentage … Confused Buyers | 60% are Confused Buyers | **60% CONFUSED BUYERS** · NEVER BUY · DEFINITELY BUY · CONFUSED BUYERS |
+| 18 | 1:13.4 | need irukkaa illaiyaa, yaarukitta vaanguradhu | Do I need it? From whom? | *Do I need it?* · *Buy it from whom?* |
+| 19 | 1:18.4 | use pannuvaangalaa maattaangalaa | Will they use it? | *Will I use it?* |
+| 20 | 1:21.5 | ippo … illa future-la … vera edhaavadhu | Now or later? Something else? | *Now or later?* · *Or something else?* |
+| 21 | 1:25.8 | multiple confusions … decision making-la help thevaippadum | Many confusions; need help deciding | **SO MANY CONFUSIONS** *They need help to decide* |
+| 22 | 1:30.6 | yaaraavadhu help pannaa mattum dhaan … decide panna mudiyum | Only with help can they decide | **ONLY WITH HELP** *can they decide what they need* · US |
+| 23 | 1:36.2 | Ivangalukkaaga dhaan sales … exist aagudhu | This is why sales exists | **THIS IS WHY SALES EXISTS** |
+| 24 | 1:39.5 | confusion-la irukkavangalukku clarity kodutthu, decision making-la help | Clarity for the confused, help to decide | CLARITY · DECISION · *Clarity for the confused. Help to decide.* · SALES |
+
+"US" is the script's *namma* (we/us). No number, fact, example or analogy appears that the script doesn't state.
+
+## 4. Design
+
+- **Spine object:** one bar under ten buyers (1 figure = 10%), split 20 | 20 | 60. It opens the video, returns
+  full-size at cue 17, and stays as a small corner reprise with the active group in red (ending with **SALES** on the 60%).
+- **Cast:** the group being talked about is a **red** hero; **US** is an ink figure with a pill label; inactive groups are **gray**.
+- **Props (drawn in code):** a browser window (AMAZON, then OUR WEBSITE) with a ticking checklist, a FEATURES card
+  that gets crossed out, and a tangle of confusion that straightens into an arrow.
+- **Faces carry the script's feelings:** confused on cue 4 and cues 17–22, sad when effort is wasted (cue 7), happy on purchase and clarity.
+
+## 5. Scene plan on the SRT clock
+
+| Scene | Opens (fully) → ends | Cues | Composition | Beats (all on the cue named) | Transition in |
+|---|---|---|---|---|---|
+| 1 split | 0:00.0 → 0:10.5 | 1–3 | Row of 10 buyers on the spine bar | c1 walk in + gray line · c2 bar grows, 20/20/60, headline · c3 first 2 turn red, others gray, camera pushes left | — |
+| 2 never | 0:10.5 → 0:26.4 | 4–7 | Red buyer vs US, two-shot | c4 both shrug + red ? · c5 buyer "stop" palm · c6 US walks in, 3 red pitch arrows die out, buyer crosses arms · c7 US slumps (sad), big red X | iris from the red pair |
+| 3 definite | 0:26.4 → 0:48.0 | 8–12 | Hero beside an AMAZON window | c8 hero walks in, corner bar (middle red) · c9 window pops · c10 DECIDE, SEE THE PRODUCT tick · c11 SEARCH, DESCRIPTION, DETAILS, FEATURES tick · c12 PURCHASE button, hero cheers | wipe |
+| 4 lead | 0:48.0 → 1:08.5 | 13–16 | Our website → hero walks to US | c13 window ABOUT US, WHAT WE SELL tick · c14 DECIDED ON US, walk to US, LEAD tag · c15 FEATURES card crossed out · c16 WHAT IT IS / HOW MUCH bubbles, hero cheers, tick, DEFINITELY BUY | iris from the purchase button |
+| 5 confused | 1:08.5 → 1:25.8 | 17–20 | Spine bar returns; 60% lit red | c17 six figures turn red + confused · c18 2 question bubbles · c19 1 bubble · c20 2 bubbles | wipe |
+| 6 clarity | 1:25.8 → 1:43.7 | 21–24 | Six confused figures, a tangle overhead | c21 tangle draws on · c22 US walks in, reaches · c23 headline, tangle straightens into an arrow · c24 CLARITY, figures happy, DECISION, corner bar 60% = SALES, hold | iris from the bubbles |
+
+## 6. Checks run (storyboard build)
+
+- Every scene is fully open on its cue and ends on a cue (6/6). Hand-offs line up, and the duration equals the SRT end (103.686 s).
+- 24 subtitle cues loaded from the SRT. All 18 storyboard frames render, with no console errors.
+- QA grid on resting frames + transition midpoints: one collision fixed (cue 16 tick over the HOW MUCH bubble).
+
+## 7. Commands
+
+```bash
+python tools/srt_sync.py videos/20-20-60-split/20-20-60.srt videos/20-20-60-split/scenes.js
+python .claude/skills/gen-stickman-v2/assets/build.py --scenes videos/20-20-60-split/scenes.js --out videos/20-20-60-split/the-20-20-60-split.html --title "The 20-20-60 Split" --file-name the-20-20-60-split --duration 103.686 --mode storyboard --music on --sfx off --subtitles off
+```
+
+After **APPROVED**: rebuild with `--mode player`, QA the transition and morph midpoints, test the export once, and publish with `capabilities: {downloads: true}`.
