@@ -1,0 +1,419 @@
+<title>20-20-60 Stickman Styles</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one cream sheet. Player first, five styles side by side, then each style's board, plan and audit. Single deliberate look: the video palette. */
+:root{
+  --cream:#F3ECDC; --ink:#1B1B1B; --red:#C62828; --gray:#8C8C8C;
+  --line:rgba(27,27,27,.14); --wash:rgba(27,27,27,.045);
+  --hand:"Patrick Hand","Comic Neue","Segoe Print",cursive;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:light;
+}
+body{background:var(--cream);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px;display:flex;flex-direction:column;gap:44px}
+h1,h2,h3{font-family:var(--hand);font-weight:400;line-height:1.1;text-wrap:balance;margin:0}
+h1{font-size:clamp(34px,5vw,52px)}
+h2{font-size:32px}
+h3{font-size:24px}
+p{margin:0;max-width:68ch}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gray)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.red{color:var(--red)} .gray{color:var(--gray)}
+header{display:flex;flex-direction:column;gap:10px}
+.facts{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:13px}
+.facts b{font-weight:500}
+.swatches{display:flex;gap:6px;align-items:center}
+.sw{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--ink)}
+
+/* pipeline */
+.pipe{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden}
+.pipe>div{padding:12px 12px 14px;border-right:1.5px solid var(--line);display:flex;flex-direction:column;gap:4px;min-width:0}
+.pipe>div:last-child{border-right:0}
+.pipe .n{font-family:var(--mono);font-size:12px;color:var(--gray)}
+.pipe .t{font-family:var(--hand);font-size:20px;line-height:1.1}
+.pipe .r{font-size:13px}
+.ok{color:var(--ink)} .ok::before{content:"✓ ";color:var(--red);font-weight:600}
+@media (max-width:820px){.pipe{grid-template-columns:repeat(2,minmax(0,1fr))}.pipe>div{border-bottom:1.5px solid var(--line)}}
+
+/* player */
+.player{display:flex;flex-direction:column;gap:12px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{font:inherit;font-family:var(--hand);font-size:19px;padding:4px 14px;border:1.5px solid var(--ink);border-radius:999px;background:transparent;color:var(--ink);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--cream)}
+.tabs button:focus-visible,.ctrl button:focus-visible,.thumb:focus-visible,input[type=range]:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.stage{width:100%;max-width:100%;aspect-ratio:16/9;background:var(--cream);border:1.5px solid var(--ink);border-radius:6px;display:block}
+.sub{min-height:3.4em;display:flex;flex-direction:column;gap:2px;padding:2px 2px 0}
+.sub .ta{font-family:var(--hand);font-size:22px;line-height:1.2}
+.sub .en{font-size:14px;color:var(--gray)}
+.ctrl{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ctrl button{font:inherit;font-weight:600;font-size:14px;padding:7px 14px;border-radius:6px;border:1.5px solid var(--ink);background:var(--ink);color:var(--cream);cursor:pointer;min-width:84px}
+.ctrl .tc{font-family:var(--mono);font-size:14px}
+.ctrl .beatnow{font-size:14px;color:var(--gray);flex:1;min-width:0}
+.track{position:relative;padding-top:6px}
+.track input{width:100%;accent-color:var(--red);margin:0}
+.ticks{position:relative;height:22px}
+.ticks span{position:absolute;top:0;width:1px;height:8px;background:var(--gray)}
+.ticks i{position:absolute;top:9px;font-style:normal;font-family:var(--mono);font-size:10px;color:var(--gray);transform:translateX(-50%)}
+.beatrow{position:relative;height:22px;border-radius:4px;overflow:hidden}
+.beatrow b{position:absolute;top:0;bottom:0;border-right:1.5px solid var(--cream);background:var(--wash);font-weight:400;font-family:var(--mono);font-size:10px;line-height:22px;text-align:center;overflow:hidden;white-space:nowrap;cursor:pointer}
+.beatrow b.on{background:var(--ink);color:var(--cream)}
+
+/* compare */
+.compare{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.compare figure{margin:0;display:flex;flex-direction:column;gap:4px;min-width:0;cursor:pointer}
+.compare figcaption{font-family:var(--hand);font-size:17px;line-height:1.1}
+.compare small{display:block;font-family:var(--mono);font-size:11px;color:var(--gray)}
+@media (max-width:820px){.compare{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* style sections */
+.style{display:flex;flex-direction:column;gap:16px;border-top:1.5px solid var(--ink);padding-top:22px}
+.shead{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px}
+@media (max-width:820px){.shead{grid-template-columns:1fr}}
+.shead .promise{font-family:var(--hand);font-size:23px;line-height:1.25}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12.5px;padding:2px 9px;border:1px solid var(--line);border-radius:999px}
+.bible{margin:0;padding-left:18px;font-size:14px}
+.score{font-family:var(--mono);font-size:13px;padding:2px 8px;border-radius:4px;background:var(--ink);color:var(--cream);white-space:nowrap}
+.boards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.thumb{display:flex;flex-direction:column;gap:4px;background:none;border:0;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer;min-width:0}
+.thumb svg{width:100%;aspect-ratio:16/9;border:1.5px solid var(--line);border-radius:4px;background:var(--cream)}
+.thumb:hover svg{border-color:var(--ink)}
+.thumb .meta{font-family:var(--mono);font-size:11px;color:var(--gray)}
+.thumb .ttl{font-family:var(--hand);font-size:17px;line-height:1.1}
+details{border:1.5px solid var(--line);border-radius:6px}
+details>summary{cursor:pointer;padding:10px 14px;font-weight:600;font-size:14px}
+details>div{padding:0 14px 14px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;vertical-align:top;padding:7px 8px;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--gray)}
+td.tc{font-family:var(--mono);white-space:nowrap;font-variant-numeric:tabular-nums}
+.pass{font-family:var(--mono);font-size:12px;font-weight:600}
+.pass.y{color:var(--ink)} .pass.n{color:var(--red)}
+.rule{font-family:var(--mono);font-size:11px;padding:1px 6px;border:1px solid var(--line);border-radius:4px;white-space:nowrap}
+
+/* explored + log + pace */
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px}
+@media (max-width:820px){.two{grid-template-columns:1fr}}
+.list{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line)}
+.list>div{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.list .mk{font-weight:700}
+.pace svg{width:100%;height:auto;display:block}
+.sec{display:flex;flex-direction:column;gap:14px}
+.next{border:1.5px solid var(--ink);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:8px}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Visual ideation · before animation</div>
+  <h1>20-20-60: five stickman styles, timed to the transcript</h1>
+  <p>Each style below was planned with a different installed skill, then checked against your four rules. Press play: every cut and reveal fires on the SRT clock, with the Tanglish line and its English meaning underneath.</p>
+  <div class="facts">
+    <span><b>24</b> cues</span><span><b>1:43.686</b> runtime</span><span><b>5</b> styles · <b id="nbeats"></b> beats</span><span id="auditsum"></span>
+    <span class="swatches">palette <i class="sw" style="background:var(--cream)"></i><i class="sw" style="background:var(--ink)"></i><i class="sw" style="background:var(--red)"></i><i class="sw" style="background:var(--gray)"></i></span>
+  </div>
+</header>
+
+<section class="sec" aria-label="Pipeline">
+  <div class="eyebrow">Each step, audited</div>
+  <div class="pipe" id="pipe"></div>
+</section>
+
+<section class="player" aria-label="Player">
+  <div class="tabs" id="tabs" role="group" aria-label="Style"></div>
+  <svg class="stage" id="stage" viewBox="0 0 640 360" role="img" aria-label="Animatic preview"></svg>
+  <div class="sub"><div class="ta" id="subta"></div><div class="en" id="suben"></div></div>
+  <div class="ctrl"><button id="play" type="button">▶ Play</button><span class="tc" id="tc">0:00.00</span><span class="beatnow" id="beatnow"></span></div>
+  <div class="track">
+    <input id="scrub" type="range" min="0" max="103.686" step="0.01" value="0" aria-label="Timeline">
+    <div class="ticks" id="ticks"></div>
+    <div class="beatrow" id="beatrow"></div>
+  </div>
+</section>
+
+<section class="sec" aria-label="All five at this moment">
+  <div><div class="eyebrow">Variations</div><h2>All five at the same moment</h2></div>
+  <p>The same timestamp in every style. Scrub or play above and these follow. Click one to open it in the player.</p>
+  <div class="compare" id="compare"></div>
+</section>
+
+<div id="styles" class="wrap" style="padding:0;gap:44px"></div>
+
+<section class="sec">
+  <div><div class="eyebrow">How the five were chosen</div><h2>Explored, then narrowed</h2></div>
+  <div class="two">
+    <div><h3>10 concepts → 5 kept</h3><div class="list" id="explored"></div></div>
+    <div><h3>Audit round 1: issues fixed</h3><div class="list" id="log"></div></div>
+  </div>
+</section>
+
+<section class="sec pace">
+  <div><div class="eyebrow">Input check</div><h2>Speech pace per cue</h2></div>
+  <p>Words per second in each SRT line. Red cues are spoken fast (over 2.6 words/s), so every style keeps at most one new idea on screen during them.</p>
+  <svg id="pace" viewBox="0 0 900 190" role="img" aria-label="Words per second by cue"></svg>
+</section>
+
+<section class="next">
+  <div class="eyebrow">Next step</div>
+  <h3>Pick one style and I'll build it in code</h3>
+  <p>The plan data (beats, element timings, palette) is in <span class="mono">ideation/plans.json</span>, ready to drive a Remotion or stickman-engine build. Cuts already sit on cue starts, so the animation will line up with the SRT frame for frame at 30 fps.</p>
+</section>
+</div>
+
+<script>
+const DATA = __DATA__;
+const AUDIT = __AUDIT__;
+const SRT = __SRT__;
+const COL = {cream:"#F3ECDC", ink:"#1B1B1B", red:"#C62828", gray:"#8C8C8C"};
+const END = DATA.cues[DATA.cues.length-1];
+const FADE = 0.35;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const ease = p => 1 - Math.pow(1 - p, 3);
+const fmt = t => { const m = Math.floor(t/60), s = t - m*60; return m + ":" + (s < 10 ? "0" : "") + s.toFixed(2); };
+
+/* ---------- drawing primitives ---------- */
+function stick(e, now, op){
+  const s = e.s || 1, c = COL[e.c] || COL.ink, dir = e.flip ? -1 : 1;
+  let x = e.x, pose = e.pose || "stand";
+  if (e.fx !== undefined){ const p = clamp((now - e.t)/0.9, 0, 1); x = e.fx + (e.x - e.fx)*ease(p); if (p < 1) pose = "walk"; }
+  const y = e.y, L = v => v*s;
+  const hip = [x, y-L(24)], neck = [x, y-L(50)], head = [x, y-L(60)];
+  const sw = Math.sin(now*9)*L(5);
+  let arms, legs;
+  const sh = [x, y-L(46)];
+  switch (pose){
+    case "walk": arms = [[sh,[x-L(12)+sw, y-L(28)]],[sh,[x+L(12)-sw, y-L(28)]]]; legs=[[hip,[x-L(11)-sw,y]],[hip,[x+L(11)+sw,y]]]; break;
+    case "shrug": arms = [[sh,[x-L(16),y-L(42)],[x-L(22),y-L(54)]],[sh,[x+L(16),y-L(42)],[x+L(22),y-L(54)]]]; break;
+    case "point": arms = [[sh,[x+dir*L(28),y-L(48)]],[sh,[x-dir*L(10),y-L(28)]]]; break;
+    case "arms": arms = [[[x-L(13),y-L(40)],[x+L(13),y-L(33)]],[[x+L(13),y-L(40)],[x-L(13),y-L(33)]],[sh,[x-L(13),y-L(40)]],[sh,[x+L(13),y-L(40)]]]; break;
+    case "sit": arms = [[sh,[x+dir*L(18),y-L(34)]],[sh,[x+dir*L(14),y-L(30)]]]; legs=[[hip,[x+dir*L(16),hip[1]],[x+dir*L(16),y]],[hip,[x+dir*L(12),hip[1]],[x+dir*L(12),y]]]; break;
+    default: arms = [[sh,[x-L(12),y-L(26)]],[sh,[x+L(12),y-L(26)]]];
+  }
+  if (!legs) legs = [[hip,[x-L(10),y]],[hip,[x+L(10),y]]];
+  const pl = pts => `<polyline points="${pts.map(p=>p.join(",")).join(" ")}" fill="none"/>`;
+  let g = `<g opacity="${op}" stroke="${c}" stroke-width="${3*Math.max(s,.7)}" stroke-linecap="round" stroke-linejoin="round">`;
+  g += `<circle cx="${head[0]}" cy="${head[1]}" r="${L(10)}" fill="${COL.cream}"/>` + pl([neck,hip]) + arms.map(pl).join("") + legs.map(pl).join("");
+  if (pose === "sit") g += `<line x1="${x-L(4)}" y1="${hip[1]+L(2)}" x2="${x+dir*L(20)}" y2="${hip[1]+L(2)}" stroke="${COL.gray}"/>`;
+  g += `</g>`;
+  if (e.tie) g += `<polygon opacity="${op}" points="${x-L(3)},${y-L(47)} ${x+L(3)},${y-L(47)} ${x},${y-L(36)}" fill="${COL.red}"/>`;
+  if (e.q) g += `<text opacity="${op}" x="${x+L(12)}" y="${y-L(76)}" font-family="Patrick Hand,cursive" font-size="${L(24)}" fill="${e.c==='ink'?COL.red:c}" text-anchor="middle">?</text>`;
+  if (e.label) g += `<text opacity="${op}" x="${x}" y="${y+L(16)}" font-family="Patrick Hand,cursive" font-size="${L(14)}" fill="${COL.gray}" text-anchor="middle">${esc(e.label)}</text>`;
+  return g;
+}
+function tagEl(x,y,s,size,c,op){
+  const w = s.length*size*0.52 + 18, h = size + 12, filled = c === "red";
+  return `<g opacity="${op}"><rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="6" fill="${filled?COL.red:COL.cream}" stroke="${COL[c]}" stroke-width="2"/>`+
+    `<text x="${x}" y="${y+size*0.34}" font-family="Patrick Hand,cursive" font-size="${size}" fill="${filled?COL.cream:COL[c]}" text-anchor="middle">${esc(s)}</text></g>`;
+}
+function knotPts(e, now){
+  const n = 90, out = [];
+  const u = e.untie !== undefined ? ease(clamp((now - e.untie)/0.9, 0, 1)) : 0;
+  for (let i=0;i<n;i++){
+    const a = i/(n-1)*Math.PI*6;
+    const r = e.r*(0.55 + 0.45*Math.sin(a*1.7 + 1.3));
+    const kx = e.x + Math.cos(a)*r, ky = e.y + Math.sin(a*1.1)*r*0.7;
+    const lx = e.x - e.r*1.3 + (i/(n-1))*e.r*2.6, ly = e.y;
+    out.push([kx + (lx-kx)*u, ky + (ly-ky)*u]);
+  }
+  return out;
+}
+function drawOn(len, now, t, dur){ const p = clamp((now - t)/dur, 0, 1); return `stroke-dasharray="${len}" stroke-dashoffset="${len*(1-ease(p))}"`; }
+
+function el(e, now){
+  if (now < e.t) return "";
+  const op = clamp((now - e.t)/FADE, 0, 1).toFixed(3);
+  const c = COL[e.c] || COL.ink;
+  switch (e.k){
+    case "fig": return stick(e, now, op);
+    case "text": return `<text opacity="${op}" x="${e.x}" y="${e.y}" font-family="Patrick Hand,cursive" font-size="${e.size}" fill="${c}" text-anchor="${e.anchor||'middle'}">${esc(e.s)}</text>`;
+    case "tag": return tagEl(e.x, e.y, e.s, e.size, e.c, op);
+    case "bubble": {
+      const w = e.w || e.s.length*e.size*0.5 + 26, h = e.size + 22;
+      const pop = 0.7 + 0.3*ease(clamp((now-e.t)/0.3,0,1));
+      return `<g opacity="${op}" transform="translate(${e.x},${e.y}) scale(${pop}) translate(${-e.x},${-e.y})" stroke="${c}" stroke-width="2" fill="${COL.cream}">`+
+        `<ellipse cx="${e.x}" cy="${e.y}" rx="${w/2}" ry="${h/2}"/><circle cx="${e.x-w*0.18}" cy="${e.y+h/2+8}" r="4"/><circle cx="${e.x-w*0.24}" cy="${e.y+h/2+17}" r="2.5"/>`+
+        `<text x="${e.x}" y="${e.y+e.size*0.34}" stroke="none" font-family="Patrick Hand,cursive" font-size="${e.size}" fill="${c}" text-anchor="middle">${esc(e.s)}</text></g>`;
+    }
+    case "arrow": {
+      const dx=e.x2-e.x1, dy=e.y2-e.y1, len=Math.hypot(dx,dy), ux=dx/len, uy=dy/len;
+      const p = ease(clamp((now-e.t)/0.5,0,1)), hx=e.x1+dx*p, hy=e.y1+dy*p;
+      return `<g opacity="${op}" stroke="${c}" stroke-width="2.6" stroke-linecap="round" fill="none"><line x1="${e.x1}" y1="${e.y1}" x2="${hx}" y2="${hy}"/>`+
+        (p>0.95?`<polyline points="${hx-ux*10-uy*6},${hy-uy*10+ux*6} ${hx},${hy} ${hx-ux*10+uy*6},${hy-uy*10-ux*6}"/>`:"")+`</g>`;
+    }
+    case "x": { const s=e.s/2, L=e.s*1.42; return `<g stroke="${c}" stroke-width="5" stroke-linecap="round"><line x1="${e.x-s}" y1="${e.y-s}" x2="${e.x+s}" y2="${e.y+s}" ${drawOn(L,now,e.t,0.25)}/><line x1="${e.x+s}" y1="${e.y-s}" x2="${e.x-s}" y2="${e.y+s}" ${drawOn(L,now,e.t+0.2,0.25)}/></g>`; }
+    case "check": { const s=e.s; return `<polyline points="${e.x-s/2},${e.y} ${e.x-s/8},${e.y+s/2.4} ${e.x+s/1.6},${e.y-s/2}" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" ${drawOn(s*2,now,e.t,0.35)}/>`; }
+    case "rect": return `<rect opacity="${op}" x="${e.x}" y="${e.y}" width="${e.w}" height="${e.h}" rx="6" fill="${e.fill?c:'none'}" stroke="${c}" stroke-width="2" ${e.fill?'':'stroke-dasharray="6 5"'}/>`;
+    case "board": return `<g opacity="${op}"><rect x="${e.x}" y="${e.y}" width="${e.w}" height="${e.h}" rx="4" fill="${COL.cream}" stroke="${COL.gray}" stroke-width="4"/><line x1="${e.x+20}" y1="${e.y+e.h+6}" x2="${e.x+e.w-20}" y2="${e.y+e.h+6}" stroke="${COL.gray}" stroke-width="4" stroke-linecap="round"/></g>`;
+    case "bar": {
+      let g = `<g opacity="${op}">`, x0 = e.x;
+      e.segs.forEach(sg => {
+        const w = e.w*sg.v/100, on = now >= sg.t, sc = COL[sg.c];
+        const fp = on ? clamp((now-sg.t)/0.5,0,1) : 0;
+        g += `<rect x="${x0}" y="${e.y}" width="${w}" height="${e.h}" fill="none" stroke="${COL.ink}" stroke-width="2"/>`;
+        if (on) g += `<rect x="${x0}" y="${e.y}" width="${w*ease(fp)}" height="${e.h}" fill="${sc}" opacity="${sg.c==='ink'?0.9:0.85}"/>`+
+          `<text x="${x0+w/2}" y="${e.y+e.h/2+6}" font-family="Patrick Hand,cursive" font-size="17" fill="${COL.cream}" text-anchor="middle" opacity="${fp}">${esc(sg.label)}</text>`;
+        x0 += w;
+      });
+      return g + `</g>`;
+    }
+    case "pie": {
+      let g = `<g opacity="${op}">`, a0 = -Math.PI/2;
+      const p = ease(clamp((now-e.t)/0.8,0,1));
+      e.segs.forEach(sg => {
+        const a1 = a0 + Math.PI*2*sg.v/100*p, large = (a1-a0) > Math.PI ? 1 : 0;
+        const on = now >= sg.t;
+        const P = a => [e.cx+Math.cos(a)*e.r, e.cy+Math.sin(a)*e.r];
+        const [x1,y1]=P(a0),[x2,y2]=P(a1);
+        g += `<path d="M${e.cx},${e.cy} L${x1},${y1} A${e.r},${e.r} 0 ${large} 1 ${x2},${y2} Z" fill="${on?COL[sg.c]:COL.cream}" fill-opacity="${on?(sg.c==='ink'?0.92:0.88):1}" stroke="${COL.ink}" stroke-width="2.5" stroke-linejoin="round"/>`;
+        const am = (a0+a1)/2, [lx,ly] = [e.cx+Math.cos(am)*e.r*0.6, e.cy+Math.sin(am)*e.r*0.6];
+        if (p > 0.9) g += `<text x="${lx}" y="${ly+7}" font-family="Patrick Hand,cursive" font-size="22" fill="${on?COL.cream:COL.ink}" text-anchor="middle">${sg.label}</text>`;
+        a0 = a1;
+      });
+      return g + `</g>`;
+    }
+    case "laptop": {
+      const s=e.s, w=110*s, h=68*s;
+      return `<g opacity="${op}" stroke="${c}" stroke-width="2.5" fill="${COL.cream}" stroke-linejoin="round"><rect x="${e.x-w/2}" y="${e.y-h}" width="${w}" height="${h}" rx="4"/>`+
+        `<polygon points="${e.x-w/2-10*s},${e.y+8*s} ${e.x+w/2+10*s},${e.y+8*s} ${e.x+w/2},${e.y} ${e.x-w/2},${e.y}"/>`+
+        `<line x1="${e.x-w/2+10*s}" y1="${e.y-h+16*s}" x2="${e.x+w/2-10*s}" y2="${e.y-h+16*s}" stroke="${COL.gray}" stroke-width="1.5"/>`+
+        `<text x="${e.x}" y="${e.y-h/2+12*s}" stroke="none" font-family="Patrick Hand,cursive" font-size="${15*s}" fill="${c}" text-anchor="middle">${esc(e.label)}</text></g>`;
+    }
+    case "door": {
+      const isOpen = e.open !== undefined && now >= e.open, p = isOpen ? ease(clamp((now-e.open)/0.5,0,1)) : 0;
+      const leafW = e.w*(1-0.72*p);
+      return `<g opacity="${op}" stroke="${c}" stroke-width="3" stroke-linejoin="round"><rect x="${e.x}" y="${e.y}" width="${e.w}" height="${e.h}" fill="${COL.cream}"/>`+
+        `<polygon points="${e.x},${e.y} ${e.x+leafW},${e.y+10*p} ${e.x+leafW},${e.y+e.h-10*p} ${e.x},${e.y+e.h}" fill="${COL.cream}"/>`+
+        `<circle cx="${e.x+leafW-12}" cy="${e.y+e.h/2}" r="3" fill="${c}"/>`+
+        (e.label?`<text x="${e.x+e.w/2}" y="${e.y-10}" stroke="none" font-family="Patrick Hand,cursive" font-size="22" fill="${c}" text-anchor="middle">${esc(e.label)}</text>`:"")+`</g>`;
+    }
+    case "meter": {
+      const p = e.t1 > e.t ? clamp((now-e.t)/(e.t1-e.t),0,1) : 1, v = e.v0 + (e.v1-e.v0)*p, H = 70, W = 28;
+      return `<g opacity="${op}"><rect x="${e.x}" y="${e.y-H}" width="${W}" height="${H}" rx="4" fill="${COL.cream}" stroke="${COL.ink}" stroke-width="2.5"/>`+
+        `<rect x="${e.x+8}" y="${e.y-H-6}" width="${W-16}" height="6" fill="${COL.ink}"/>`+
+        `<rect x="${e.x+4}" y="${e.y-4-(H-8)*v}" width="${W-8}" height="${(H-8)*v}" fill="${COL.red}"/>`+
+        `<text x="${e.x+W/2}" y="${e.y+16}" font-family="Patrick Hand,cursive" font-size="14" fill="${COL.ink}" text-anchor="middle">${Math.round(v*100)}%</text></g>`;
+    }
+    case "knot": { const pts = knotPts(e, now); return `<polyline opacity="${op}" points="${pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ")}" fill="none" stroke="${c}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`; }
+    case "drops": { const b = Math.sin(now*6)*3; return `<g opacity="${op}" fill="${c}">${[0,1,2].map(i=>`<path d="M${e.x+i*9},${e.y+i*7+b} q4,7 0,10 q-4,-3 0,-10z"/>`).join("")}</g>`; }
+  }
+  return "";
+}
+function beatAt(style, t){ const bs = style.beats; for (const b of bs) if (t >= b.start && t < b.end) return b; return bs[bs.length-1]; }
+function frame(style, t){
+  const b = beatAt(style, t);
+  const ground = `<line x1="0" y1="293" x2="640" y2="293" stroke="${COL.gray}" stroke-width="1" stroke-dasharray="2 6" opacity=".6"/>`;
+  return ground + b.elems.map(e => el(e, t)).join("");
+}
+
+/* ---------- state ---------- */
+let cur = 0, now = 0, playing = false, last = 0;
+const $ = id => document.getElementById(id);
+const stage = $("stage"), scrub = $("scrub");
+function cueAt(t){ for (let i=0;i<SRT.length;i++) if (t >= DATA.cues[i] && t < DATA.cues[i+1]) return i; return SRT.length-1; }
+
+function buildTabs(){
+  $("tabs").innerHTML = DATA.styles.map((s,i)=>`<button type="button" data-i="${i}" aria-pressed="${i===cur}">${esc(s.name)}</button>`).join("");
+  $("tabs").querySelectorAll("button").forEach(b => b.onclick = () => select(+b.dataset.i));
+}
+function buildBeatRow(){
+  const st = DATA.styles[cur];
+  $("beatrow").innerHTML = st.beats.map(b => `<b data-t="${b.start}" title="${esc(b.id+' · '+b.title)}" style="left:${b.start/END*100}%;width:${(b.end-b.start)/END*100}%">${esc(b.id)}</b>`).join("");
+  $("beatrow").querySelectorAll("b").forEach(x => x.onclick = () => seek(+x.dataset.t + 0.01));
+}
+function select(i){ cur = i; buildTabs(); buildBeatRow(); draw(); }
+function seek(t){ now = clamp(t, 0, END - 0.001); draw(); }
+function draw(){
+  const st = DATA.styles[cur];
+  stage.innerHTML = frame(st, now);
+  scrub.value = now;
+  $("tc").textContent = fmt(now) + " / " + fmt(END);
+  const ci = cueAt(now);
+  $("subta").textContent = SRT[ci];
+  $("suben").textContent = (ci+1) + " · " + DATA.gloss[ci];
+  const b = beatAt(st, now);
+  $("beatnow").textContent = b.id + " · " + b.title;
+  $("beatrow").querySelectorAll("b").forEach(x => x.classList.toggle("on", x.textContent === b.id));
+  document.querySelectorAll(".cmp").forEach((svg, i) => { svg.innerHTML = frame(DATA.styles[i], now); });
+  document.querySelectorAll(".cmpb").forEach((sm, i) => { const bb = beatAt(DATA.styles[i], now); sm.textContent = bb.id + " · " + bb.title; });
+}
+function loop(ts){
+  if (!playing) return;
+  const dt = last ? (ts - last)/1000 : 0; last = ts;
+  now += dt;
+  if (now >= END){ now = END - 0.001; playing = false; $("play").textContent = "▶ Play"; }
+  draw();
+  if (playing) requestAnimationFrame(loop);
+}
+$("play").onclick = () => {
+  playing = !playing; $("play").textContent = playing ? "❚❚ Pause" : "▶ Play";
+  if (playing){ if (now >= END - 0.01) now = 0; last = 0; requestAnimationFrame(loop); }
+};
+scrub.oninput = () => { seek(+scrub.value); };
+
+/* ---------- static sections ---------- */
+function init(){
+  $("nbeats").textContent = DATA.styles.reduce((a,s)=>a+s.beats.length,0);
+  const tp = AUDIT.styles.reduce((a,s)=>a+s.passed,0), tt = AUDIT.styles.reduce((a,s)=>a+s.total,0);
+  $("auditsum").innerHTML = `audit <b>${tp}/${tt}</b> checks pass`;
+  const srtOk = AUDIT.srt.filter(c=>c.ok).length;
+  const steps = [
+    ["1","Parse the SRT",`${srtOk}/${AUDIT.srt.length} checks: 24 cues, back-to-back, end 103.686 s`],
+    ["2","Translate meaning","24 Tanglish lines glossed to plain English"],
+    ["3","Explore concepts","10 tried, 5 kept, 5 dropped with a reason"],
+    ["4","Plan with 5 skills","one skill per style, each skill's own method"],
+    ["5","Audit round 1",`${DATA.audit_log.length} issues found in 3 styles`],
+    ["6","Fix + audit round 2",`${tp}/${tt} checks pass across 5 styles`],
+  ];
+  $("pipe").innerHTML = steps.map(s=>`<div><span class="n">${s[0]}</span><span class="t">${s[1]}</span><span class="r ok">${esc(s[2])}</span></div>`).join("");
+
+  let ticks = "";
+  DATA.cues.slice(0,-1).forEach((c,i)=>{ ticks += `<span style="left:${c/END*100}%"></span>`; if (i%2===0) ticks += `<i style="left:${c/END*100}%">${i+1}</i>`; });
+  $("ticks").innerHTML = ticks;
+
+  $("compare").innerHTML = DATA.styles.map((s,i)=>`<figure data-i="${i}"><svg class="stage cmp" viewBox="0 0 640 360" role="img" aria-label="${esc(s.name)}"></svg><figcaption>${esc(s.name)}<small class="cmpb"></small></figcaption></figure>`).join("");
+  $("compare").querySelectorAll("figure").forEach(f => f.onclick = () => { select(+f.dataset.i); $("tabs").scrollIntoView({behavior:"smooth", block:"start"}); });
+
+  $("styles").innerHTML = DATA.styles.map((s,si)=>{
+    const a = AUDIT.styles[si];
+    const cols = s.columns;
+    const rows = s.beats.map(b=>`<tr><td class="tc">${esc(b.id)}</td><td class="tc">${fmt(b.start)}–${fmt(b.end)}</td><td class="tc">${b.cues.join(", ")}</td><td>${esc(b.title)}</td>${cols.map(c=>`<td>${esc(b.fields[c[0]]||"")}</td>`).join("")}</tr>`).join("");
+    const checks = a.checks.map(c=>`<tr><td><span class="pass ${c.ok?'y':'n'}">${c.ok?'PASS':'FAIL'}</span></td><td><span class="rule">${esc(c.rule)}</span></td><td>${esc(c.check)}</td><td>${esc(c.note)}</td></tr>`).join("");
+    return `<section class="style" id="s-${s.id}">
+      <div class="shead">
+        <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+          <div class="eyebrow">Style ${si+1} · skill: ${esc(s.skill)} <span class="gray">(${esc(s.source)})</span></div>
+          <h2>${esc(s.name)} <span class="score">${a.passed}/${a.total}</span></h2>
+          <p class="promise">${esc(s.promise)}</p>
+          <div class="chips">${s.method.map(m=>`<span class="chip">${esc(m)}</span>`).join("")}</div>
+        </div>
+        <div style="min-width:0"><div class="eyebrow" style="margin-bottom:6px">Continuity rules</div><ul class="bible">${s.bible.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+          <p style="margin-top:8px;font-size:13px" class="gray">${s.beats.length} beats · longest still moment ${a.max_still}s</p></div>
+      </div>
+      <div class="boards">${s.beats.map(b=>`<button class="thumb" type="button" data-s="${si}" data-t="${b.start}"><svg viewBox="0 0 640 360" aria-hidden="true">${frame(s, b.end - 0.02)}</svg><span class="meta">${esc(b.id)} · ${fmt(b.start)}–${fmt(b.end)} · cue ${b.cues.join(",")}</span><span class="ttl">${esc(b.title)}</span></button>`).join("")}</div>
+      <details><summary>Plan for each beat (${esc(s.skill)} fields)</summary><div><table><thead><tr><th>Beat</th><th>Time</th><th>Cues</th><th>Visual</th>${cols.map(c=>`<th>${esc(c[1])}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div></details>
+      <details><summary>Audit: ${a.passed}/${a.total} checks pass</summary><div><table><thead><tr><th></th><th>Rule</th><th>Check</th><th>Result</th></tr></thead><tbody>${checks}</tbody></table></div></details>
+    </section>`;
+  }).join("");
+  document.querySelectorAll(".thumb").forEach(t => t.onclick = () => { select(+t.dataset.s); seek(+t.dataset.t + 0.01); $("tabs").scrollIntoView({behavior:"smooth", block:"start"}); });
+
+  $("explored").innerHTML = DATA.explored.map(x=>`<div><span class="mk ${x.kept?'':'red'}">${x.kept?'✓':'✗'}</span><span><b>${esc(x.name)}</b><br><span class="gray">${esc(x.why)}</span></span></div>`).join("");
+  $("log").innerHTML = DATA.audit_log.map(x=>`<div><span class="mk red">!</span><span><b>${esc(x.style)} · ${esc(x.beat)}</b>: ${esc(x.issue)}<br><span class="gray">Fix: ${esc(x.fix)}</span></span></div>`).join("");
+
+  // pace chart
+  const W=900,H=190,L=34,B=34,T=10,max=4;
+  const bw=(W-L-8)/AUDIT.pace.length;
+  let g=`<g font-family="IBM Plex Mono,monospace" font-size="11" fill="${COL.gray}">`;
+  [0,1,2,3,4].forEach(v=>{const y=H-B-(H-B-T)*v/max; g+=`<line x1="${L}" x2="${W-4}" y1="${y}" y2="${y}" stroke="${COL.ink}" stroke-opacity=".1"/><text x="${L-6}" y="${y+4}" text-anchor="end">${v}</text>`;});
+  const ty=H-B-(H-B-T)*2.6/max;
+  g+=`<line x1="${L}" x2="${W-4}" y1="${ty}" y2="${ty}" stroke="${COL.red}" stroke-dasharray="4 4"/><text x="${W-6}" y="${ty-5}" text-anchor="end" fill="${COL.red}">2.6 words/s</text>`;
+  AUDIT.pace.forEach((p,i)=>{const h=(H-B-T)*p.wps/max, x=L+i*bw+3; g+=`<rect x="${x}" y="${H-B-h}" width="${bw-6}" height="${h}" fill="${p.fast?COL.red:COL.gray}"><title>cue ${p.n}: ${p.wps} words/s</title></rect><text x="${x+(bw-6)/2}" y="${H-B+16}" text-anchor="middle">${p.n}</text>`;});
+  g+=`<text x="${L}" y="${H-4}">cue</text></g>`;
+  $("pace").innerHTML=g;
+
+  buildTabs(); buildBeatRow(); seek(7.0);
+}
+init();
+</script>

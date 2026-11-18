@@ -1,0 +1,648 @@
+{
+ "srt": [
+  {
+   "check": "24 cues parsed",
+   "ok": true,
+   "note": "24 cues"
+  },
+  {
+   "check": "cues are back-to-back (no gaps/overlaps)",
+   "ok": true,
+   "note": "none"
+  },
+  {
+   "check": "plan cue table matches the SRT",
+   "ok": true,
+   "note": "ends at 103.686s"
+  },
+  {
+   "check": "speech pace (fast > 2.6 words/s)",
+   "ok": true,
+   "note": "fast cues: [3, 6, 7, 10, 13, 20, 22], keep visuals simplest there"
+  }
+ ],
+ "pace": [
+  {
+   "n": 1,
+   "wps": 2.08,
+   "fast": false
+  },
+  {
+   "n": 2,
+   "wps": 1.6,
+   "fast": false
+  },
+  {
+   "n": 3,
+   "wps": 2.86,
+   "fast": true
+  },
+  {
+   "n": 4,
+   "wps": 2.42,
+   "fast": false
+  },
+  {
+   "n": 5,
+   "wps": 2.33,
+   "fast": false
+  },
+  {
+   "n": 6,
+   "wps": 3.4,
+   "fast": true
+  },
+  {
+   "n": 7,
+   "wps": 2.65,
+   "fast": true
+  },
+  {
+   "n": 8,
+   "wps": 2.5,
+   "fast": false
+  },
+  {
+   "n": 9,
+   "wps": 2.59,
+   "fast": false
+  },
+  {
+   "n": 10,
+   "wps": 2.71,
+   "fast": true
+  },
+  {
+   "n": 11,
+   "wps": 2.4,
+   "fast": false
+  },
+  {
+   "n": 12,
+   "wps": 2.19,
+   "fast": false
+  },
+  {
+   "n": 13,
+   "wps": 2.89,
+   "fast": true
+  },
+  {
+   "n": 14,
+   "wps": 2.36,
+   "fast": false
+  },
+  {
+   "n": 15,
+   "wps": 2.31,
+   "fast": false
+  },
+  {
+   "n": 16,
+   "wps": 2.26,
+   "fast": false
+  },
+  {
+   "n": 17,
+   "wps": 2.24,
+   "fast": false
+  },
+  {
+   "n": 18,
+   "wps": 2.2,
+   "fast": false
+  },
+  {
+   "n": 19,
+   "wps": 1.61,
+   "fast": false
+  },
+  {
+   "n": 20,
+   "wps": 3.49,
+   "fast": true
+  },
+  {
+   "n": 21,
+   "wps": 2.5,
+   "fast": false
+  },
+  {
+   "n": 22,
+   "wps": 3.04,
+   "fast": true
+  },
+  {
+   "n": 23,
+   "wps": 2.42,
+   "fast": false
+  },
+  {
+   "n": 24,
+   "wps": 2.15,
+   "fast": false
+  }
+ ],
+ "styles": [
+  {
+   "id": "ten-people",
+   "name": "Ten People",
+   "checks": [
+    {
+     "rule": "Timestamp",
+     "check": "covers 0.000 → 103.686 s",
+     "ok": true,
+     "note": "0 → 103.686"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "no gaps or overlaps between beats",
+     "ok": true,
+     "note": "contiguous"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "every cut lands exactly on a cue boundary",
+     "ok": true,
+     "note": "all cuts on cue starts"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "each of the 24 cues is owned by exactly one beat",
+     "ok": true,
+     "note": "24/24"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "every reveal happens inside its own beat",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "mid-beat reveals locked to a cue start",
+     "ok": true,
+     "note": "13 reveals fire exactly on a spoken line"
+    },
+    {
+     "rule": "Easy",
+     "check": "labels ≤ 5 words",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Easy",
+     "check": "≤ 14 words on screen at once",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Easy",
+     "check": "≤ 12 new elements per beat",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Easy",
+     "check": "something changes at least every 6 s",
+     "ok": true,
+     "note": "longest still: 5.4s (S06 29.6→35.0s)"
+    },
+    {
+     "rule": "Stickman",
+     "check": "every beat has a stickman on screen",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Stickman",
+     "check": "characters are line figures only (no other character art)",
+     "ok": true,
+     "note": "72 stick figures, no portraits or photos"
+    },
+    {
+     "rule": "Palette",
+     "check": "only cream / black / red / gray",
+     "ok": true,
+     "note": "used: gray, ink, red"
+    },
+    {
+     "rule": "Context",
+     "check": "no real brand names/logos on screen",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Context",
+     "check": "every beat is tied to the lines it illustrates",
+     "ok": true,
+     "note": "ok"
+    }
+   ],
+   "passed": 15,
+   "total": 15,
+   "beats": 13,
+   "max_still": 5.4
+  },
+  {
+   "id": "living-bar",
+   "name": "Living Bar",
+   "checks": [
+    {
+     "rule": "Timestamp",
+     "check": "covers 0.000 → 103.686 s",
+     "ok": true,
+     "note": "0 → 103.686"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "no gaps or overlaps between beats",
+     "ok": true,
+     "note": "contiguous"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "every cut lands exactly on a cue boundary",
+     "ok": true,
+     "note": "all cuts on cue starts"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "each of the 24 cues is owned by exactly one beat",
+     "ok": true,
+     "note": "24/24"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "every reveal happens inside its own beat",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "mid-beat reveals locked to a cue start",
+     "ok": true,
+     "note": "12 reveals fire exactly on a spoken line"
+    },
+    {
+     "rule": "Easy",
+     "check": "labels ≤ 5 words",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Easy",
+     "check": "≤ 14 words on screen at once",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Easy",
+     "check": "≤ 12 new elements per beat",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Easy",
+     "check": "something changes at least every 6 s",
+     "ok": true,
+     "note": "longest still: 5.4s (G07 29.6→35.0s)"
+    },
+    {
+     "rule": "Stickman",
+     "check": "every beat has a stickman on screen",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Stickman",
+     "check": "characters are line figures only (no other character art)",
+     "ok": true,
+     "note": "32 stick figures, no portraits or photos"
+    },
+    {
+     "rule": "Palette",
+     "check": "only cream / black / red / gray",
+     "ok": true,
+     "note": "used: gray, ink, red"
+    },
+    {
+     "rule": "Context",
+     "check": "no real brand names/logos on screen",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Context",
+     "check": "every beat is tied to the lines it illustrates",
+     "ok": true,
+     "note": "ok"
+    }
+   ],
+   "passed": 15,
+   "total": 15,
+   "beats": 13,
+   "max_still": 5.4
+  },
+  {
+   "id": "three-doors",
+   "name": "Three Doors",
+   "checks": [
+    {
+     "rule": "Timestamp",
+     "check": "covers 0.000 → 103.686 s",
+     "ok": true,
+     "note": "0 → 103.686"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "no gaps or overlaps between beats",
+     "ok": true,
+     "note": "contiguous"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "every cut lands exactly on a cue boundary",
+     "ok": true,
+     "note": "all cuts on cue starts"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "each of the 24 cues is owned by exactly one beat",
+     "ok": true,
+     "note": "24/24"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "every reveal happens inside its own beat",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "mid-beat reveals locked to a cue start",
+     "ok": true,
+     "note": "13 reveals fire exactly on a spoken line"
+    },
+    {
+     "rule": "Easy",
+     "check": "labels ≤ 5 words",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Easy",
+     "check": "≤ 14 words on screen at once",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Easy",
+     "check": "≤ 12 new elements per beat",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Easy",
+     "check": "something changes at least every 6 s",
+     "ok": true,
+     "note": "longest still: 5.4s (D05 29.6→35.0s)"
+    },
+    {
+     "rule": "Stickman",
+     "check": "every beat has a stickman on screen",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Stickman",
+     "check": "characters are line figures only (no other character art)",
+     "ok": true,
+     "note": "31 stick figures, no portraits or photos"
+    },
+    {
+     "rule": "Palette",
+     "check": "only cream / black / red / gray",
+     "ok": true,
+     "note": "used: gray, ink, red"
+    },
+    {
+     "rule": "Context",
+     "check": "no real brand names/logos on screen",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Context",
+     "check": "every beat is tied to the lines it illustrates",
+     "ok": true,
+     "note": "ok"
+    }
+   ],
+   "passed": 15,
+   "total": 15,
+   "beats": 11,
+   "max_still": 5.4
+  },
+  {
+   "id": "effort-meter",
+   "name": "Effort Meter",
+   "checks": [
+    {
+     "rule": "Timestamp",
+     "check": "covers 0.000 → 103.686 s",
+     "ok": true,
+     "note": "0 → 103.686"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "no gaps or overlaps between beats",
+     "ok": true,
+     "note": "contiguous"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "every cut lands exactly on a cue boundary",
+     "ok": true,
+     "note": "all cuts on cue starts"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "each of the 24 cues is owned by exactly one beat",
+     "ok": true,
+     "note": "24/24"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "every reveal happens inside its own beat",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "mid-beat reveals locked to a cue start",
+     "ok": true,
+     "note": "21 reveals fire exactly on a spoken line"
+    },
+    {
+     "rule": "Easy",
+     "check": "labels ≤ 5 words",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Easy",
+     "check": "≤ 14 words on screen at once",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Easy",
+     "check": "≤ 12 new elements per beat",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Easy",
+     "check": "something changes at least every 6 s",
+     "ok": true,
+     "note": "longest still: 5.0s (E04 30.0→35.0s)"
+    },
+    {
+     "rule": "Stickman",
+     "check": "every beat has a stickman on screen",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Stickman",
+     "check": "characters are line figures only (no other character art)",
+     "ok": true,
+     "note": "33 stick figures, no portraits or photos"
+    },
+    {
+     "rule": "Palette",
+     "check": "only cream / black / red / gray",
+     "ok": true,
+     "note": "used: cream, gray, ink, red"
+    },
+    {
+     "rule": "Context",
+     "check": "no real brand names/logos on screen",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Context",
+     "check": "every beat is tied to the lines it illustrates",
+     "ok": true,
+     "note": "ok"
+    }
+   ],
+   "passed": 15,
+   "total": 15,
+   "beats": 9,
+   "max_still": 5.0
+  },
+  {
+   "id": "whiteboard",
+   "name": "Whiteboard Teacher",
+   "checks": [
+    {
+     "rule": "Timestamp",
+     "check": "covers 0.000 → 103.686 s",
+     "ok": true,
+     "note": "0 → 103.686"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "no gaps or overlaps between beats",
+     "ok": true,
+     "note": "contiguous"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "every cut lands exactly on a cue boundary",
+     "ok": true,
+     "note": "all cuts on cue starts"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "each of the 24 cues is owned by exactly one beat",
+     "ok": true,
+     "note": "24/24"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "every reveal happens inside its own beat",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Timestamp",
+     "check": "mid-beat reveals locked to a cue start",
+     "ok": true,
+     "note": "0 reveals fire exactly on a spoken line"
+    },
+    {
+     "rule": "Easy",
+     "check": "labels ≤ 5 words",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Easy",
+     "check": "≤ 14 words on screen at once",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Easy",
+     "check": "≤ 12 new elements per beat",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Easy",
+     "check": "something changes at least every 4 s",
+     "ok": true,
+     "note": "longest still: 3.8s (17 69.6→73.4s)"
+    },
+    {
+     "rule": "Stickman",
+     "check": "every beat has a stickman on screen",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Stickman",
+     "check": "characters are line figures only (no other character art)",
+     "ok": true,
+     "note": "29 stick figures, no portraits or photos"
+    },
+    {
+     "rule": "Palette",
+     "check": "only cream / black / red / gray",
+     "ok": true,
+     "note": "used: gray, ink, red"
+    },
+    {
+     "rule": "Context",
+     "check": "no real brand names/logos on screen",
+     "ok": true,
+     "note": "ok"
+    },
+    {
+     "rule": "Context",
+     "check": "every beat is tied to the lines it illustrates",
+     "ok": true,
+     "note": "ok"
+    }
+   ],
+   "passed": 15,
+   "total": 15,
+   "beats": 24,
+   "max_still": 3.8
+  }
+ ]
+}
