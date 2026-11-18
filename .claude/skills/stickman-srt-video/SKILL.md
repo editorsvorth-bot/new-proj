@@ -18,7 +18,9 @@ final delivery (Stage 8).
 3. **The SRT is the clock.** Scenes open fully *on* a cue start; reveals use `cue(n)` and `wordAt(n, phrase)`.
    **Nothing is revealed before it is spoken**: a group's colour, accessories, label and headline appear on its name.
 4. **Palette locked:** ink `#141414`, red `#D62828` (the one thing to look at), cream `#F4EDE0`, gray `#8C8C8C`.
-5. **Readable and clean:** at most 12 words on screen, no text over text or over a figure, text ≥ 24 px at 1080p,
+5. **Always score.** After every video (and every re-render) give the wow / understanding score per scene and overall,
+   with the change since the previous version and a reason for anything under 10 (`scripts/scorecard.py`). Never skip it.
+6. **Readable and clean:** at most 12 words on screen, no text over text or over a figure, text ≥ 24 px at 1080p,
    40 px safe margin, every figure and its arms inside its box/segment, everyone in a scene at the same scale.
 
 ## Configuration (fill defaults, ask only if the script/SRT is missing)
@@ -46,7 +48,7 @@ Script: <text or file>            SRT: <file>  (required: it is the clock)
 | 5 | Animate + polish | Phase A understanding, Phase B wow (`references/quality.md`), motion pass + composition pass (`references/motion-composition.md`) | Rubric scores recorded per scene |
 | 6 | Gates | `timing_check`, `frame_audit` (overlap, size, edge, ≤12 words), `still_audit` (≤1.5 s), `smooth_check` (no jumps at 30 fps), 2-second QA sheets scored by eye | All pass (single-frame pop-ins allowed) |
 | 7 | Audio + render | `audio_probe.py bed` → `--music on/off`; `build_video.py --mode player --voiceover on`; `render_mp4.js`; `audio_probe.py sync` | Voice offset 0 ms, correlation > .9; 1920×1080, 30 fps |
-| 8 | Deliver (STOP) | Send the MP4 + before/after scores + `cost_report.py`; commit `scenes.js`, FLOW.md, MP4 | User accepts or asks for changes (→ revise from Stage 5) |
+| 8 | Deliver (STOP) | Send the MP4 + **the wow/understanding scorecard** (`scorecard.py` → SCORES.md: per scene, overall, change since the last version, why not 10, muted test) + `cost_report.py`; commit `scenes.js`, FLOW.md, SCORES.*, MP4 | Scorecard written and shown in the reply; user accepts or asks for changes (→ revise from Stage 5) |
 
 Full instructions, commands and checklists for each stage: **`references/master-flow.md`** (read it first).
 
@@ -58,7 +60,7 @@ Full instructions, commands and checklists for each stage: **`references/master-
 | `assets/kit.js` | Reusable helpers: SRT clock (`cue`, `wordAt`, `headlineWords`), spine bar, browser window, checklist, wearables (`person` + `WEAR`), `tieFigure`, `phoneHolder`, briefcase, bag, wallet, cart, scroll, question bubbles with icons, product pitch bubbles, stamp X, thread unravel, pacing. API: `references/kit-api.md` |
 | `assets/scenes-template.js` | The only file written per video: SRT block, config, scenes, STORYBOARD, SFX |
 | `assets/build_video.py` | kit + scenes → page; `--mode review` adds the approval panel (`assets/review/review.js`) |
-| `scripts/` | `srt_sync.py`, `timing_check.js`, `frame_audit.js`, `still_audit.js`, `smooth_check.js`, `qa_sheet.js`, `render_mp4.js`, `audio_probe.py`, `cost_report.py` |
+| `scripts/` | `srt_sync.py`, `timing_check.js`, `frame_audit.js`, `still_audit.js`, `smooth_check.js`, `qa_sheet.js`, `render_mp4.js`, `audio_probe.py`, `scorecard.py` (wow/understanding after every video, with history), `cost_report.py` |
 | `references/` | `master-flow.md`, `rules.md`, `quality.md`, `motion-composition.md`, `gates.md`, `kit-api.md`, `storyboard-review.md`, `lessons.md` |
 | `examples/20-20-60-split/` | The finished reference video's scenes, flow and plan. Never reuse its story for another script. |
 

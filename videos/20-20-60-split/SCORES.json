@@ -1,0 +1,278 @@
+[
+ {
+  "label": "Storyboard v3",
+  "date": "2026-11-18",
+  "wow": 6.83,
+  "understanding": 8.0,
+  "scenes": [
+   {
+    "id": "split",
+    "scene": "1 The 20-20-60 Split",
+    "wow": 7,
+    "understanding": 9,
+    "why": ""
+   },
+   {
+    "id": "never",
+    "scene": "2 Never Buy",
+    "wow": 7,
+    "understanding": 7,
+    "why": ""
+   },
+   {
+    "id": "definite",
+    "scene": "3 Definitely Buy",
+    "wow": 6,
+    "understanding": 8,
+    "why": ""
+   },
+   {
+    "id": "lead",
+    "scene": "4 They Come To Us As A Lead",
+    "wow": 7,
+    "understanding": 8,
+    "why": ""
+   },
+   {
+    "id": "confused",
+    "scene": "5 Confused Buyers",
+    "wow": 8,
+    "understanding": 9,
+    "why": ""
+   },
+   {
+    "id": "clarity",
+    "scene": "6 Why Sales Exists",
+    "wow": 6,
+    "understanding": 7,
+    "why": ""
+   }
+  ],
+  "mute_test": []
+ },
+ {
+  "label": "Storyboard v4 (phases A-C)",
+  "date": "2026-11-18",
+  "wow": 8.33,
+  "understanding": 9.08,
+  "scenes": [
+   {
+    "id": "split",
+    "scene": "1 The 20-20-60 Split",
+    "wow": 8,
+    "understanding": 9,
+    "why": ""
+   },
+   {
+    "id": "never",
+    "scene": "2 Never Buy",
+    "wow": 8,
+    "understanding": 9,
+    "why": ""
+   },
+   {
+    "id": "definite",
+    "scene": "3 Definitely Buy",
+    "wow": 8.5,
+    "understanding": 9,
+    "why": ""
+   },
+   {
+    "id": "lead",
+    "scene": "4 They Come To Us As A Lead",
+    "wow": 8.5,
+    "understanding": 9.5,
+    "why": ""
+   },
+   {
+    "id": "confused",
+    "scene": "5 Confused Buyers",
+    "wow": 8,
+    "understanding": 9,
+    "why": ""
+   },
+   {
+    "id": "clarity",
+    "scene": "6 Why Sales Exists",
+    "wow": 9,
+    "understanding": 9,
+    "why": ""
+   }
+  ],
+  "mute_test": []
+ },
+ {
+  "label": "MP4 v1 (voiceover, new ending)",
+  "date": "2026-11-18",
+  "wow": 8.33,
+  "understanding": 9.17,
+  "scenes": [
+   {
+    "id": "split",
+    "scene": "1 The 20-20-60 Split",
+    "wow": 8,
+    "understanding": 9,
+    "why": ""
+   },
+   {
+    "id": "never",
+    "scene": "2 Never Buy",
+    "wow": 8,
+    "understanding": 9,
+    "why": ""
+   },
+   {
+    "id": "definite",
+    "scene": "3 Definitely Buy",
+    "wow": 8.5,
+    "understanding": 9,
+    "why": ""
+   },
+   {
+    "id": "lead",
+    "scene": "4 They Come To Us As A Lead",
+    "wow": 8.5,
+    "understanding": 9.5,
+    "why": ""
+   },
+   {
+    "id": "confused",
+    "scene": "5 Confused Buyers",
+    "wow": 8,
+    "understanding": 9,
+    "why": ""
+   },
+   {
+    "id": "clarity",
+    "scene": "6 Why Sales Exists",
+    "wow": 9,
+    "understanding": 9.5,
+    "why": ""
+   }
+  ],
+  "mute_test": []
+ },
+ {
+  "label": "MP4 v2 (new skills: motion + composition)",
+  "date": "2026-11-18",
+  "wow": 8.6,
+  "understanding": 9.25,
+  "scenes": [
+   {
+    "id": "split",
+    "scene": "1 The 20-20-60 Split",
+    "wow": 8,
+    "understanding": 9,
+    "why": ""
+   },
+   {
+    "id": "never",
+    "scene": "2 Never Buy",
+    "wow": 8.2,
+    "understanding": 9,
+    "why": ""
+   },
+   {
+    "id": "definite",
+    "scene": "3 Definitely Buy",
+    "wow": 8.7,
+    "understanding": 9,
+    "why": ""
+   },
+   {
+    "id": "lead",
+    "scene": "4 They Come To Us As A Lead",
+    "wow": 9,
+    "understanding": 9.5,
+    "why": ""
+   },
+   {
+    "id": "confused",
+    "scene": "5 Confused Buyers",
+    "wow": 8.5,
+    "understanding": 9.5,
+    "why": ""
+   },
+   {
+    "id": "clarity",
+    "scene": "6 Why Sales Exists",
+    "wow": 9.2,
+    "understanding": 9.5,
+    "why": ""
+   }
+  ],
+  "mute_test": []
+ },
+ {
+  "label": "MP4 v3 final (word-timed reveals)",
+  "date": "2026-11-18",
+  "wow": 8.62,
+  "understanding": 9.4,
+  "scenes": [
+   {
+    "id": "split",
+    "scene": "1 The 20-20-60 Split",
+    "wow": 8,
+    "understanding": 9.5,
+    "why": "Wow: the opening is a clean diagram but has no gag; understanding: the Tanglish line 'diagrammatic-ah explain' is only a gray subline"
+   },
+   {
+    "id": "never",
+    "scene": "2 Never Buy",
+    "wow": 8.2,
+    "understanding": 9,
+    "why": "The wallet is small at full frame; the pitch bubbles' product icon reads only on a big screen"
+   },
+   {
+    "id": "definite",
+    "scene": "3 Definitely Buy",
+    "wow": 8.7,
+    "understanding": 9.2,
+    "why": "Six checklist rows are a lot to read in 9 s; the window is static while rows tick"
+   },
+   {
+    "id": "lead",
+    "scene": "4 They Come To Us As A Lead",
+    "wow": 9,
+    "understanding": 9.5,
+    "why": "Two scene changes are still a plain circle opening; the scroll gag is quick"
+   },
+   {
+    "id": "confused",
+    "scene": "5 Confused Buyers",
+    "wow": 8.5,
+    "understanding": 9.7,
+    "why": "Question pictures are small; the scene is long (17 s) with one camera move"
+   },
+   {
+    "id": "clarity",
+    "scene": "6 Why Sales Exists",
+    "wow": 9.3,
+    "understanding": 9.5,
+    "why": "The thread knot is tidy rather than messy; the final hold is 1.2 s"
+   }
+  ],
+  "mute_test": [
+   {
+    "question": "What are the three groups?",
+    "answerable_from_frames": true
+   },
+   {
+    "question": "Why doesn't selling to Never Buy work?",
+    "answerable_from_frames": true
+   },
+   {
+    "question": "How do Definitely Buy people decide?",
+    "answerable_from_frames": true
+   },
+   {
+    "question": "What do Confused Buyers worry about?",
+    "answerable_from_frames": true
+   },
+   {
+    "question": "Why does sales exist?",
+    "answerable_from_frames": true
+   }
+  ]
+ }
+]

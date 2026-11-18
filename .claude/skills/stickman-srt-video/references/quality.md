@@ -30,7 +30,7 @@ the hand, then a bag · handshake · questions collapse into the next scene · a
 helper's end as he pulls (two tugs), levels, sinks behind the group and becomes the 60 % bar · blinks · 40–50
 cue-locked SFX for ~100 s.
 
-## Scoring procedure
+## Scoring procedure (after every video; `scripts/scorecard.py` writes SCORES.md and keeps the history)
 `qa_sheet.js` every 2 s (four sheets for ~100 s) + transition/morph midpoints; one row per scene with a reason for
 anything under 10. Muted test: write the five questions a viewer should answer and check each is answerable from
 frames alone. Report honestly what is not yet 10 and why.

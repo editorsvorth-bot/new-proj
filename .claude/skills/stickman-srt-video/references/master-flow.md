@@ -83,7 +83,14 @@ ffprobe -v error -show_entries format=duration:stream=codec_name,width,height,r_
 The last scene's `end` is `Math.max(cue(N+1), CONFIG.duration)` so it holds to the end of the audio.
 
 ## Stage 8: Deliver (hard stop)
-Send the MP4 (SendUserFile), the before/after score table, what each gate found, and
+**Score the video first (mandatory after every render, including re-renders):**
+```bash
+python SK/scripts/scorecard.py init V        # writes V/scores.input.json with one row per scene
+# fill wow / understanding (0-10) per scene from the QA sheets, a reason for anything under 10, and the muted test
+python SK/scripts/scorecard.py write V --label "<version label>"   # -> V/SCORES.md (+ history in V/SCORES.json)
+```
+Paste the SCORES.md table (per scene, overall, change since the previous version, why not 10, muted test) into the
+reply. Then send the MP4 (SendUserFile), what each gate found, and
 `python SK/scripts/cost_report.py ~/.claude/projects/<project>/<session>.jsonl` (check current prices first).
 Commit `scenes.js`, `FLOW.md`, the SRT, the HTML and the MP4. Changes requested → back to Stage 5 for the named
 scenes only, then Stages 6–8 again.
