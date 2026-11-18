@@ -133,9 +133,12 @@ function salesman(g, F) {
   const r = person(g, Object.assign({ color: PAL.ink }, F)); if ((F.draw ?? 1) < .6) return r;
   const s = F.s || 1, n = neckOf(F, r), h = r.hip, L = Math.hypot(h[0] - n[0], h[1] - n[1]) || 1, ux = (h[0] - n[0]) / L, uy = (h[1] - n[1]) / L, px = -uy, py = ux;
   const P = (a, b) => [n[0] + ux * a * s + px * b * s, n[1] + uy * a * s + py * b * s];
+  // follow-through: the blade swings a little around the knot, lagging the body (lean + a slow pendulum)
+  const sw = .07 * Math.sin(NOW * 2.4 + (F.seed || 0)) + ((F.pose && F.pose.lean) || 0) * .012 * (F.facing || 1);
+  const k = P(20, 0), rot = ([x, y]) => [k[0] + (x - k[0]) * Math.cos(sw) - (y - k[1]) * Math.sin(sw), k[1] + (x - k[0]) * Math.sin(sw) + (y - k[1]) * Math.cos(sw)];
   g.save(); g.globalAlpha *= F.alpha ?? 1;
   fillPoly(g, [P(8, -8), P(8, 8), P(20, 7), P(20, -7)], PAL.red);
-  fillPoly(g, [P(20, -6), P(20, 6), P(64, 12), P(80, 0), P(64, -12)], PAL.red);
+  fillPoly(g, [P(20, -6), P(20, 6), P(64, 12), P(80, 0), P(64, -12)].map(rot), PAL.red);
   g.restore(); return r;
 }
 /** NEVER BUY: wears its hat; 'can't pay' is shown with an empty wallet (emptyWallet). */
@@ -289,8 +292,8 @@ function buildScenes() {
           }
         });
         subline(g, 'Let me explain it with a diagram', 960, 210, prog(t, .3, .9), prog(t, cue(2) - .3, cue(2)), { align: 'center', size: 44, color: PAL.gray, face: 'label' });
-        fadeAlpha(g, 1 - prog(t, cue(3), cue(3) + .4), () => headline(g, 'THE 20-20-60 SPLIT', 960, 220, prog(t, cue(2), cue(2) + 1.1), { align: 'center', size: 96, red: [1] }));
-        headline(g, '20% NEVER BUY', 140, 220, prog(t, cue(3) + .3, cue(3) + 1.3), { size: 92, red: [1, 2] });
+        fadeAlpha(g, 1 - prog(t, cue(3), cue(3) + .4), () => headline(g, 'THE 20-20-60 SPLIT', 960, 230, prog(t, cue(2), cue(2) + 1.1), { align: 'center', size: 96, red: [1] }));
+        headline(g, '20% NEVER BUY', 140, 230, prog(t, cue(3) + .3, cue(3) + 1.3), { size: 92, red: [1, 2] });
       } },
 
     /* 2. NEVER BUY  (cues 4-7)  nobody knows why they're here; no need, empty wallet; pitches bounce off; sales not needed */
@@ -340,18 +343,18 @@ function buildScenes() {
           }
           stampX(g, (hx + 1160) / 2, 590, 90, prog(t, cue(7) + .5, cue(7) + .9));
         });
-        const hA = (a, b) => 1 - prog(t, a, b);
+        const hA = (a, b) => { const q = prog(t, a - .1, b); return 1 - q * q; };   // exits: gentle ease-in over 0.4 s
         fadeAlpha(g, hA(cue(5) - .3, cue(5)), () => {
-          headline(g, 'WHY ARE THEY HERE?', 140, 240, prog(t, cue(4) + .1, cue(4) + 1.0), { size: 84, red: [3] });
-          subline(g, "Not them. Not us.", 140, 312, prog(t, cue(4) + 1.6, cue(4) + 2.1), 0, { size: 40 });
+          headline(g, 'WHY ARE THEY HERE?', 140, 230, prog(t, cue(4) + .1, cue(4) + 1.0), { size: 84, red: [3] });
+          subline(g, "Not them. Not us.", 140, 302, prog(t, cue(4) + 1.6, cue(4) + 2.1), 0, { size: 40 });
         });
-        fadeAlpha(g, hA(cue(6) - .3, cue(6)), () => headline(g, "NO NEED. CAN'T PAY.", 140, 240, prog(t, cue(5) + .1, cue(5) + 1.0), { size: 84, red: [3] }));
+        fadeAlpha(g, hA(cue(6) - .3, cue(6)), () => headline(g, "NO NEED. CAN'T PAY.", 140, 230, prog(t, cue(5) + .1, cue(5) + 1.0), { size: 84, red: [3] }));
         fadeAlpha(g, hA(cue(7) - .3, cue(7)), () => {
-          headline(g, "THEY WON'T BUY", 140, 240, prog(t, cue(6) + .1, cue(6) + 1.0), { size: 84, red: [2] });
-          subline(g, 'However hard we sell', 140, 312, prog(t, cue(6) + 1.2, cue(6) + 1.7), 0, { size: 40 });
+          headline(g, "THEY WON'T BUY", 140, 230, prog(t, cue(6) + .1, cue(6) + 1.0), { size: 84, red: [2] });
+          subline(g, 'However hard we sell', 140, 302, prog(t, cue(6) + 1.2, cue(6) + 1.7), 0, { size: 40 });
         });
-        headline(g, 'SALES? NOT NEEDED.', 140, 240, prog(t, cue(7) + .1, cue(7) + 1.0), { size: 84, red: [0] });
-        subline(g, 'Our effort here = waste of time', 140, 312, prog(t, cue(7) + 1.4, cue(7) + 1.9), 0, { size: 40 });
+        headline(g, 'SALES? NOT NEEDED.', 140, 230, prog(t, cue(7) + .1, cue(7) + 1.0), { size: 84, red: [0] });
+        subline(g, 'Our effort here = waste of time', 140, 302, prog(t, cue(7) + 1.4, cue(7) + 1.9), 0, { size: 40 });
       } },
 
     /* 3. DEFINITELY BUY  (cues 8-12)  like an Amazon buyer: buy (not just cart), decide, look, search ... features -> purchase */
@@ -369,6 +372,7 @@ function buildScenes() {
           pose = poseMix(pose, POSES.think, E.inOut(prog(t, cue(9) + .8, cue(9) + 1.3)));
           pose = poseMix(pose, POSES.point, E.inOut(prog(t, cue(10) + 1.4, cue(10) + 1.9)));
           pose = poseMix(pose, POSES.reach, E.inOut(prog(t, cue(12) + .1, cue(12) + .5)));
+          pose = poseMix(pose, POSES.slump, .35 * Math.sin(Math.PI * prog(t, cue(12) + 1.12, cue(12) + 1.32)));   // anticipation dip
           pose = poseMix(pose, POSES.cheer, E.inOut(prog(t, cue(12) + 1.3, cue(12) + 1.7)) * (1 - E.inOut(prog(t, cue(12) + 2.2, cue(12) + 2.6))));
           // a small nod as each step is ticked
           const nod = rows.reduce((s, [, a]) => s + Math.sin(Math.PI * prog(t, a + .2, a + .6)) * 12, 0);
@@ -398,15 +402,16 @@ function buildScenes() {
           });
         });
         miniBar(g, 1, prog(t, cue(8) + .4, cue(8) + 1.0));
-        fadeAlpha(g, 1 - prog(t, cue(9) - .3, cue(9)), () => headline(g, '20% DEFINITELY BUY', 140, 240, prog(t, cue(8) + .1, cue(8) + 1.1), { size: 84, red: [1, 2] }));
-        headline(g, 'LIKE AMAZON BUYERS', 140, 240, prog(t, cue(9) + .1, cue(9) + 1.1), { size: 72, red: [1], maxW: 760 });
+        fadeAlpha(g, 1 - prog(t, cue(9) - .3, cue(9)), () => headline(g, '20% DEFINITELY BUY', 140, 230, prog(t, cue(8) + .1, cue(8) + 1.1), { size: 84, red: [1, 2] }));
+        headline(g, 'LIKE AMAZON BUYERS', 140, 230, prog(t, cue(9) + .1, cue(9) + 1.1), { size: 72, red: [1], maxW: 760 });
         tag(g, 'NOT JUST CART', 300, 610, prog(t, cue(10) + .9, cue(10) + 1.3) * (1 - prog(t, cue(11) - .4, cue(11))), { size: 28 });
       } },
 
     /* 4. THEY COME TO US AS A LEAD  (cues 13-16)  the Amazon window becomes OUR WEBSITE -> LEAD ticket handed over -> features scroll waved off -> handshake */
     { id: 'lead', start: cue(13) - TR, end: cue(17) - .001, enter: { type: 'iris', x: 1340, y: 560, dur: TR },
       camera: t => { const a = t + cue(13) - TR; return tween([[cue(13) - TR, { x: 0, y: 0, z: 1.04 }], [cue(13) + 1.5, { x: 0, y: 0, z: 1 }], [cue(14) + 1.6, { x: -40, y: 10, z: 1.03 }],
-        [cue(14) + 3.8, { x: 60, y: 30, z: 1.04 }], [cue(16) + 2.0, { x: 60, y: 30, z: 1.04 }], [cue(16) + 2.8, { x: 120, y: 60, z: 1.1 }]], a); },
+        [cue(14) + 3.8, { x: 60, y: 30, z: 1.04 }], [cue(15) + .2, { x: 60, y: 30, z: 1.04 }], [cue(15) + 1.6, { x: 260, y: 30, z: 1.06 }],
+        [cue(16) + 2.0, { x: 260, y: 30, z: 1.06 }], [cue(16) + 2.8, { x: 300, y: 60, z: 1.1 }]], a); },
       draw(g, t0, T, c) {
         const t = t0 + cue(13) - TR; NOW = t; dotGrid(g, c);
         const S = 1.1;
@@ -442,7 +447,7 @@ function buildScenes() {
           briefcase(g, 1690, GY, 1, 1);
           // the LEAD ticket: appears in the buyer's hand, travels to the salesman's hand
           const lp = prog(t, cue(14) + 3.6, cue(14) + 3.9) * (1 - prog(t, cue(15) - .3, cue(15))), lm = E.inOut(prog(t, cue(14) + 4.0, cue(14) + 4.7));
-          tag(g, 'LEAD', lerp(hr.handF[0], ur.handF[0], lm), lerp(hr.handF[1], ur.handF[1], lm) - 70, lp, { bg: PAL.red, size: 38 });
+          tag(g, 'LEAD', lerp(hr.handF[0], ur.handF[0], lm), lerp(hr.handF[1], ur.handF[1], lm) - 70 - Math.sin(Math.PI * lm) * 70, lp, { bg: PAL.red, size: 38 });
           // features scroll: unrolls from the salesman's hand, waved off, crossed, rolled back up
           const L = 300 * E.out(prog(t, cue(15) + .2, cue(15) + 1.2)) * (1 - E.inOut(prog(t, cue(15) + 2.8, cue(15) + 3.4)));
           featureScroll(g, ur.handF[0] - 95, ur.handF[1] + 10, L);
@@ -456,13 +461,13 @@ function buildScenes() {
             badge(g, mx, my - 120, prog(t, cue(16) + 3.0, cue(16) + 3.5), 'tick', PAL.red, PAL.cream, 34); }
         });
         miniBar(g, 1, 1);
-        const hA = (a, b) => 1 - prog(t, a, b);
+        const hA = (a, b) => { const q = prog(t, a - .1, b); return 1 - q * q; };   // exits: gentle ease-in over 0.4 s
         fadeAlpha(g, hA(cue(14) + 2.0, cue(14) + 2.3), () => {
-          headline(g, 'SAME WITH US', 140, 240, prog(t, cue(13) + .1, cue(13) + 1.0), { size: 84, red: [2] });
+          headline(g, 'SAME WITH US', 140, 230, prog(t, cue(13) + .1, cue(13) + 1.0), { size: 84, red: [2] });
         });
-        fadeAlpha(g, hA(cue(15) - .3, cue(15)), () => headline(g, 'THEY COME AS A LEAD', 140, 240, prog(t, cue(14) + 2.3, cue(14) + 3.2), { size: 80, red: [4] }));
-        fadeAlpha(g, hA(cue(16) - .3, cue(16)), () => headline(g, 'NO NEED TO SELL FEATURES', 140, 240, prog(t, cue(15) + .1, cue(15) + 1.0), { size: 72, red: [4], maxW: 1150 }));
-        headline(g, "THEY'LL SURELY BUY", 140, 240, prog(t, cue(16) + .1, cue(16) + 1.0), { size: 80, red: [1] });
+        fadeAlpha(g, hA(cue(15) - .3, cue(15)), () => headline(g, 'THEY COME AS A LEAD', 140, 230, prog(t, cue(14) + 2.3, cue(14) + 3.2), { size: 80, red: [4] }));
+        fadeAlpha(g, hA(cue(16) - .3, cue(16)), () => headline(g, 'NO NEED TO SELL FEATURES', 140, 230, prog(t, cue(15) + .1, cue(15) + 1.0), { size: 72, red: [4], maxW: 1150 }));
+        headline(g, "THEY'LL SURELY BUY", 140, 230, prog(t, cue(16) + .1, cue(16) + 1.0), { size: 80, red: [1] });
         tag(g, 'DEFINITELY BUY', 960, 990, prog(t, cue(16) + 3.6, cue(16) + 4.1), { size: 34 });
       } },
 
@@ -478,9 +483,12 @@ function buildScenes() {
           const labA = 1 - prog(t, cue(18) - .4, cue(18));
           spineBar(g, 1, [rgba(PAL.gray, .9), rgba(PAL.gray, .9), r6 > .5 ? PAL.red : PAL.ink], 1, [labA, labA, prog(t, cue(17) + .3, cue(17) + 1.0) * labA]);
           const heads = [];
+          const QT = [[cue(18) + .1, 4], [cue(18) + 2.6, 6], [cue(19) + .1, 8], [cue(20) + .1, 5], [cue(20) + 2.1, 9]];
+          const focal = (QT.filter(([a]) => t >= a).pop() || [0, -1])[1];
           for (let i = 0; i < 10; i++) {
             const conf = i >= 4, on = conf ? E.inOut(prog(t, cue(17) + .4 + (i - 4) * .1, cue(17) + 1.0 + (i - 4) * .1)) : 0;
-            const pc = pacing(SLOT(i), t, i, on);
+            const amp = focal < 0 ? 1 : (i === focal ? 1 : .35);            // ambient for the rest, full motion for the speaker
+            const pc = pacing(SLOT(i), t, i, on * amp);
             const F = { x: conf ? pc.x : SLOT(i), y: GY, s: .75, pose: idle(conf ? pc.pose : (i < 2 ? POSES.cross : POSES.stand), t, i), facing: conf ? pc.facing : 1, seed: i,
               color: conf ? (r6 > .5 ? PAL.red : PAL.ink) : rgba(PAL.gray, .9), expr: conf && t > cue(17) + .5 ? 'confused' : 'neutral', wear: WEAR[i] };
             const r = conf ? person(g, F) : (i < 2 ? neverBuyer(g, F) : sureBuyer(g, F, 1));
@@ -495,7 +503,7 @@ function buildScenes() {
             qBubble(g, s, qx, qy, heads[i][0], heads[i][1] - 30, prog(t, a, a + .45) * (1 - col), ic, dim);
           });
         });
-        headline(g, '60% CONFUSED BUYERS', 140, 220, prog(t, cue(17) + .1, cue(17) + 1.1), { size: 84, red: [1, 2] });
+        headline(g, '60% CONFUSED BUYERS', 140, 230, prog(t, cue(17) + .1, cue(17) + 1.1), { size: 84, red: [1, 2] });
       } },
 
     /* 6. WHY SALES EXISTS  (cues 21-24)  one tangled thread -> SALES takes the loose end and pulls -> loops come undone from his end
@@ -516,7 +524,7 @@ function buildScenes() {
         // SALES walks in, takes the loose end, leans back while pulling, lets go
         const w = walker([[cue(22) + .2, 2100], [cue(22) + 2.0, 1560, E.out], [P0, 1560], [P1, 1630, E.inOut]], t, S, POSES.reach, -1);
         let up = poseMix(w.pose, POSES.reach, E.inOut(prog(t, cue(22) + 1.8, cue(22) + 2.3)));
-        up = Object.assign({}, up, { lean: (up.lean || 0) - 10 * Math.sin(Math.PI * clamp((t - P0) / (P1 - P0))) });
+        up = Object.assign({}, up, { lean: (up.lean || 0) + 6 * Math.sin(Math.PI * prog(t, P0 - .3, P0)) - 10 * Math.sin(Math.PI * clamp((t - P0) / (P1 - P0))) });   // lean in, then pull back
         up = poseMix(up, POSES.stand, E.inOut(prog(t, cue(24) + .9, cue(24) + 1.4)));
         up = poseMix(up, POSES.point, E.inOut(prog(t, land + .3, land + .8)));
         world(g, c, () => {
@@ -553,7 +561,7 @@ function buildScenes() {
           // the six (drawn after the band so it passes behind them); they hop when the bar lands
           const heads = [];
           for (let i = 0; i < 6; i++) {
-            const calm = E.inOut(prog(t, cue(24) + .1 + i * .08, cue(24) + .7 + i * .08)), pc = pacing(660 + i * 118, t, i, 1 - calm);
+            const calm = E.inOut(prog(t, cue(24) + .1 + i * .08, cue(24) + .7 + i * .08)), pc = pacing(660 + i * 118, t, i, (1 - calm) * .45);
             const hop = 34 * Math.sin(Math.PI * prog(t, land + i * .05, land + .45 + i * .05));
             const pose = poseMix(pc.pose, i % 2 ? POSES.cheer : POSES.stand, calm);
             const r = person(g, { x: pc.x, y: GY - hop, s: S, pose: idle(pose, t, i), facing: calm > .5 ? 1 : pc.facing, seed: 10 + i, color: PAL.red, expr: clear ? 'happy' : 'confused', wear: WEAR[4 + i] });
@@ -573,17 +581,17 @@ function buildScenes() {
           tag(g, 'CLARITY', 930, 350, prog(t, cue(24) + .1, cue(24) + .5) * (1 - prog(t, cue(24) + 1.3, cue(24) + 1.6)), { size: 44, bg: PAL.red });
           heads.forEach((h, i) => badge(g, h[0], h[1] - 100, prog(t, land + .4 + i * .08, land + .9 + i * .08), 'tick', PAL.red, PAL.cream, 22));
         });
-        const hA = (a, b) => 1 - prog(t, a, b);
+        const hA = (a, b) => { const q = prog(t, a - .1, b); return 1 - q * q; };   // exits: gentle ease-in over 0.4 s
         fadeAlpha(g, hA(cue(22) - .3, cue(22)), () => {
-          headline(g, 'SO MANY CONFUSIONS', 140, 220, prog(t, cue(21) + .1, cue(21) + 1.0), { size: 84, red: [2] });
-          subline(g, 'They need help to decide', 140, 292, prog(t, cue(21) + 2.0, cue(21) + 2.5), 0, { size: 40 });
+          headline(g, 'SO MANY CONFUSIONS', 140, 230, prog(t, cue(21) + .1, cue(21) + 1.0), { size: 84, red: [2] });
+          subline(g, 'They need help to decide', 140, 302, prog(t, cue(21) + 2.0, cue(21) + 2.5), 0, { size: 40 });
         });
         fadeAlpha(g, hA(cue(23) - .3, cue(23)), () => {
-          headline(g, 'ONLY WITH HELP', 140, 220, prog(t, cue(22) + .1, cue(22) + 1.0), { size: 84, red: [2] });
-          subline(g, 'can they decide what they need', 140, 292, prog(t, cue(22) + 1.4, cue(22) + 1.9), 0, { size: 40 });
+          headline(g, 'ONLY WITH HELP', 140, 230, prog(t, cue(22) + .1, cue(22) + 1.0), { size: 84, red: [2] });
+          subline(g, 'can they decide what they need', 140, 302, prog(t, cue(22) + 1.4, cue(22) + 1.9), 0, { size: 40 });
         });
-        headline(g, 'THIS IS WHY SALES EXISTS', 140, 220, prog(t, cue(23) + .1, cue(23) + 1.1), { size: 80, red: [3] });
-        subline(g, 'Clarity. Help to decide.', 140, 292, prog(t, cue(24) + .6, cue(24) + 1.1), 0, { size: 40 });
+        headline(g, 'THIS IS WHY SALES EXISTS', 140, 230, prog(t, cue(23) + .1, cue(23) + 1.1), { size: 80, red: [3] });
+        subline(g, 'Clarity. Help to decide.', 140, 302, prog(t, cue(24) + .6, cue(24) + 1.1), 0, { size: 40 });
       } },
   ];
 

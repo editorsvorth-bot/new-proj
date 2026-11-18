@@ -1,6 +1,20 @@
 {
   "version": 2,
   "skills": {
+    "animation-principles": {
+      "source": "iart-ai/motion-design-skills",
+      "commit": "b85e50c4cef5ff17aa2187a10d49d2dae9226c74",
+      "sourceType": "github",
+      "skillPath": "skills/animation-principles/SKILL.md",
+      "computedHash": "429233e8c4a429b072130b231afb072eace2f5f5e9d6d7c7566ed8c2bd4aec83"
+    },
+    "critique-composition": {
+      "source": "owl-listener/designer-skills",
+      "commit": "9a6930cf84a822eb458624bd11c61aac5bbdf224",
+      "sourceType": "github",
+      "skillPath": "visual-critique/skills/critique-composition/SKILL.md",
+      "computedHash": "ffe2ee6f78400bb1f1e18aba066af4dd6f1699c4ba08ddfc0c0d6202d2cf43d1"
+    },
     "explainer-video": {
       "source": "iart-ai/explainer-video-skills",
       "commit": "3c13a1bc360c08503f24f9c9a99fda6d3d35de56",
