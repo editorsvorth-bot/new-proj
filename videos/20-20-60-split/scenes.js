@@ -25,16 +25,18 @@ function spineBar(g, p, col, nums = 1, lab = [0, 0, 0], o = {}) {
   if (p <= 0) return;
   const x0 = o.x ?? BAR.x, w = (o.w ?? BAR.w), y = o.y ?? GY, h = o.h ?? BAR.h, k = w / BAR.w;
   const ws = [0.2, 0.2, 0.6].map(f => f * w), sp = E.out(clamp(p));
+  if (o.crack !== undefined && o.crack <= 0) { fillPoly(g, rrectPoly(x0 + 4 * k, y, (w - 8 * k) * sp, h, 14 * k), col[1]); return; }
+  const cr = o.crack === undefined ? 1 : clamp(o.crack), gap = 4 * k * E.back(cr), hop = o.crack === undefined ? 0 : -16 * Math.sin(Math.PI * cr);
   let x = x0;
   for (let s = 0; s < 3; s++) {
-    const segP = prog(sp, s * 0.18, s * 0.18 + 0.55);
-    if (segP > 0) fillPoly(g, rrectPoly(x + 4 * k, y, (ws[s] - 8 * k) * E.out(segP), h, 14 * k), col[s]);
+    const segP = o.crack !== undefined ? 1 : o.grow !== undefined ? (s < 2 ? E.out(clamp(o.grow)) : 1) : prog(sp, s * 0.18, s * 0.18 + 0.55);
+    if (segP > 0) fillPoly(g, rrectPoly(x + gap, y + (s === 1 ? 0 : hop), (ws[s] - 2 * gap) * E.out(segP), h, 14 * k), col[s]);
     const na = Array.isArray(nums) ? nums[s] : nums;
     if (na > 0 && segP >= 1) {
       g.save(); g.globalAlpha *= na; g.font = font('head', Math.round(40 * k)); g.fillStyle = PAL.cream; g.textAlign = 'center'; g.textBaseline = 'middle';
       g.fillText(['20%', '20%', '60%'][s], x + ws[s] / 2, y + h / 2 + 2); g.restore();
     }
-    if (lab[s] > 0 && !o.noLabels) subline(g, GROUP[s], x + ws[s] / 2, y + h + 52, lab[s], 0, { face: 'label', size: 30, align: 'center', color: col[s] === PAL.red ? PAL.red : PAL.ink });
+    if (lab[s] > 0 && !o.noLabels) subline(g, GROUP[s], x + ws[s] / 2, y + h + 52, lab[s], 0, { face: 'label', size: o.labSize || 30, align: 'center', color: col[s] === PAL.red ? PAL.red : PAL.ink });
     x += ws[s];
   }
 }
@@ -99,7 +101,11 @@ function wear(g, F, r, kinds) {
   g.restore();
 }
 /** Any figure + its wearables (F.wear). */
-function person(g, F) { const r = drawStickman(g, F); wear(g, F, r, F.wear); return r; }
+function person(g, F) {
+  const seed = F.seed ?? Math.round((F.x || 0) / 131), per = 3.4 + (seed % 5) * .37;
+  const blink = ((NOW + seed * .77) % per) < .13 && ['neutral', 'happy', 'confused'].includes(F.expr || 'neutral');
+  const r = drawStickman(g, blink ? Object.assign({}, F, { expr: 'closed' }) : F); wear(g, F, r, F.wear); return r;
+}
 /** Briefcase standing on the ground (SALES), or carried at a hand point. */
 function briefcase(g, x, y, s = 1, a = 1) {
   if (a <= 0) return; fadeAlpha(g, a, () => {
@@ -132,19 +138,8 @@ function salesman(g, F) {
   fillPoly(g, [P(20, -6), P(20, 6), P(64, 12), P(80, 0), P(64, -12)], PAL.red);
   g.restore(); return r;
 }
-/** NEVER BUY: pockets turned inside out ("can't pay"), popping in with pk 0..1. */
-function neverBuyer(g, F, pk = 1) {
-  const r = person(g, F); if (pk <= 0) return r;
-  const s = (F.s || 1) * 1.35, q = E.back(clamp(pk));
-  [-1, 1].forEach((d, i) => {
-    const x = r.hip[0] + d * 22 * s, y = r.hip[1] + 6 * s, sw = Math.sin((F.t || 0) * 3 + i) * .12;
-    g.save(); g.translate(x, y); g.rotate(sw + d * .15); g.scale(q, q);
-    fillPoly(g, rrectPoly(-12 * s, 0, 24 * s, 30 * s, 9 * s), PAL.cream);
-    tracePoly(g, rrectPoly(-12 * s, 0, 24 * s, 30 * s, 9 * s)); g.lineWidth = 4 * s; g.strokeStyle = PAL.ink; g.stroke();
-    g.restore();
-  });
-  return r;
-}
+/** NEVER BUY: wears its hat; 'can't pay' is shown with an empty wallet (emptyWallet). */
+function neverBuyer(g, F) { return person(g, F); }
 /** DEFINITELY BUY: phone in hand with a ticked screen (already researched, already decided). */
 function sureBuyer(g, F, ph = 1) {
   const r = person(g, F); if (ph <= 0) return r;
@@ -173,6 +168,10 @@ function pitchBubble(g, x, y, s, col, a = 1) {
 }
 function linePts2(x0, y0, x1, y1) { const o = []; for (let i = 0; i < KN; i++) o.push([lerp(x0, x1, i / (KN - 1)), lerp(y0, y1, i / (KN - 1))]); return o; }
 
+/** A red X that lands like a rubber stamp. */
+function stampX(g, x, y, r, p) { if (p <= 0) return; const q = lerp(1.7, 1, E.out(clamp(p)));
+  fadeAlpha(g, clamp(p * 3), () => popAt(g, x, y, q, () => crossMark(g, x, y, r, 1, 20))); }
+
 /** Deterministic tangle (a knot of confusion) with N points; untangles into a straight arrow shaft. */
 const KN = 240;
 function knotPts(cx, cy, r) {
@@ -183,29 +182,103 @@ function knotPts(cx, cy, r) {
 }
 function linePts(x0, x1, y) { const o = []; for (let i = 0; i < KN; i++) o.push([lerp(x0, x1, i / (KN - 1)), y]); return o; }
 
+
+/* ---------------- Phase A props (script ideas drawn as objects) ---------------- */
+let NOW = 0;   // absolute time of the frame being drawn (set at the top of every scene draw); used for blinks
+/** Empty wallet held at a hand: opens, then tips upside down (nothing inside). */
+function emptyWallet(g, hx, hy, s, p, tip) {
+  if (p <= 0) return;
+  popAt(g, hx, hy, E.back(clamp(p)), () => {
+    g.save(); g.translate(hx, hy - 10 * s); g.rotate(-.2 + tip * 2.6); g.scale(s, s);
+    fillPoly(g, rrectPoly(-38, -26, 76, 52, 10), PAL.ink);
+    fillPoly(g, rrectPoly(-30, -18, 60, 30, 6), PAL.cream);
+    g.strokeStyle = rgba(PAL.ink, .35); g.lineWidth = 3; g.beginPath(); g.moveTo(-24, -4); g.lineTo(24, -4); g.stroke();
+    g.restore();
+  });
+}
+/** Shopping cart with the product sitting in it. */
+function cart(g, x, y, s, p) {
+  if (p <= 0) return;
+  popAt(g, x, y, E.back(clamp(p)), () => {
+    g.save(); g.translate(x, y); g.scale(s, s); g.lineCap = g.lineJoin = 'round';
+    fillPoly(g, rrectPoly(-28, -86, 46, 38, 6), PAL.ink); fillPoly(g, rrectPoly(-9, -86, 9, 38, 2), PAL.red);
+    g.strokeStyle = PAL.ink; g.lineWidth = 9;
+    g.beginPath(); g.moveTo(-96, -96); g.lineTo(-70, -96); g.lineTo(-52, -20); g.lineTo(52, -20); g.lineTo(66, -70); g.lineTo(-62, -70); g.stroke();
+    g.fillStyle = PAL.ink; [-38, 40].forEach(wx => { g.beginPath(); g.arc(wx, 4, 13, 0, 7); g.fill(); });
+    g.restore();
+  });
+}
+/** FEATURES scroll hanging from a hand, unrolled to length L. */
+function featureScroll(g, hx, hy, L) {
+  if (L <= 4) return; const w = 170, x = hx - w / 2;
+  fillPoly(g, rrectPoly(x, hy, w, L, 8), PAL.cream);
+  g.save(); tracePoly(g, rrectPoly(x, hy, w, L, 8)); g.lineWidth = 5; g.strokeStyle = PAL.ink; g.stroke(); g.restore();
+  g.save(); g.beginPath(); g.rect(x, hy, w, L); g.clip();
+  g.font = font('head', 26); g.fillStyle = PAL.ink; g.textAlign = 'center'; g.fillText('FEATURES', hx, hy + 44);
+  for (let k = 0; k < 8; k++) fillPoly(g, rrectPoly(x + 22, hy + 70 + k * 30, 126 - (k % 3) * 26, 12, 6), rgba(PAL.gray, .7));
+  g.restore();
+  fillPoly(g, rrectPoly(x - 14, hy - 10, w + 28, 20, 10), PAL.ink);
+  fillPoly(g, rrectPoly(x - 14, hy + L - 10, w + 28, 20, 10), PAL.ink);
+}
+/** Small picture for a question bubble (drawn inside a cream disc). */
+function qIcon(g, kind, x, y, p) {
+  if (p <= 0) return;
+  popAt(g, x, y, E.back(clamp(p)), () => {
+    g.beginPath(); g.arc(x, y, 34, 0, 7); g.fillStyle = PAL.cream; g.fill(); g.lineWidth = 5; g.strokeStyle = PAL.ink; g.stroke();
+    g.save(); g.translate(x, y); g.lineCap = g.lineJoin = 'round';
+    const box = (bx, by, c = PAL.ink) => { fillPoly(g, rrectPoly(bx - 12, by - 10, 24, 20, 4), c); };
+    if (kind === 'need') { box(-6, 6); g.font = font('head', 26); g.fillStyle = PAL.red; g.textAlign = 'center'; g.fillText('?', 14, -2); }
+    if (kind === 'whom') [-11, 11].forEach(sx => { fillPoly(g, [[sx - 9, 14], [sx + 9, 14], [sx + 9, -2], [sx, -12], [sx - 9, -2]], PAL.ink); g.fillStyle = PAL.cream; g.fillRect(sx - 3, 4, 6, 10); });
+    if (kind === 'use') { box(0, 8, PAL.gray); g.fillStyle = PAL.gray; [[-10, -12], [2, -18], [12, -10]].forEach(([dx, dy]) => { g.beginPath(); g.arc(dx, dy, 3, 0, 7); g.fill(); }); }
+    if (kind === 'when') { g.beginPath(); g.arc(0, 0, 18, 0, 7); g.lineWidth = 4; g.strokeStyle = PAL.ink; g.stroke(); g.beginPath(); g.moveTo(0, 0); g.lineTo(0, -12); g.moveTo(0, 0); g.lineTo(9, 4); g.stroke(); }
+    if (kind === 'else') { box(-11, 4); box(11, 4, PAL.gray); }
+    g.restore();
+  });
+}
+/** Question bubble with its picture on the left; a = emphasis (older questions dim). */
+function qBubble(g, text, x, y, tx, ty, p, icon, a = 1) {
+  if (p <= 0) return;
+  fadeAlpha(g, a, () => {
+    g.save(); g.font = font('label', 32); const w = g.measureText(text).width + 48; g.restore();
+    speechBubble(g, text, x + 22, y, tx, ty, p, { size: 32 });
+    qIcon(g, icon, x + 22 - w / 2 - 20, y, prog(p, .2, 1));
+  });
+}
+/** Thick straight band between two points (the thread becoming the bar). */
+function band(g, a, b, th, col) { const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L * th / 2, ny = dx / L * th / 2;
+  fillPoly(g, [[a[0] + nx, a[1] + ny], [b[0] + nx, b[1] + ny], [b[0] - nx, b[1] - ny], [a[0] - nx, a[1] - ny]], col); }
+
 function buildScenes() {
   const W = CONFIG.width, H = CONFIG.height;
-  const KNOT = knotPts(960, 430, 120), LINE = linePts(700, 1160, 430);
+  const KNOT = knotPts(0, 0, 110);
 
   SCENES = [
-    /* 1. THE 20-20-60 SPLIT  (cues 1-3)  ten buyers -> the bar splits 20 | 20 | 60 -> first 20% = NEVER BUY */
+    /* 1. THE 20-20-60 SPLIT  (cues 1-3)  each group walks in acting its nature -> the bar splits -> first 20% = NEVER BUY */
     { id: 'split', start: 0, end: cue(4) - .001,
       camera: t => tween([[0, { x: 0, y: 30, z: 1.06 }], [2.2, { x: 0, y: 0, z: 1 }], [cue(3) + .4, { x: 0, y: 0, z: 1 }], [cue(3) + 2.4, { x: -540, y: 80, z: 1.3 }]], t),
       draw(g, t, T, c) {
-        dotGrid(g, c);
+        NOW = t; dotGrid(g, c);
         const red0 = prog(t, cue(3), cue(3) + .6);
         world(g, c, () => {
           groundLine(g, GY, prog(t, 0, .8));
-          const col = [mix(0, 1, red0) > .5 ? PAL.red : PAL.ink, rgba(PAL.ink, 1 - .55 * red0), rgba(PAL.ink, 1 - .55 * red0)];
+          const col = [red0 > .5 ? PAL.red : PAL.ink, rgba(PAL.ink, 1 - .55 * red0), rgba(PAL.ink, 1 - .55 * red0)];
           const nA = prog(t, cue(2) + 1.0, cue(2) + 1.6), nOut = 1 - prog(t, cue(3) + .3, cue(3) + .8);
-          spineBar(g, prog(t, cue(2), cue(2) + 1.2), col, [nA, nA * nOut, nA * nOut], [prog(t, cue(3) + .3, cue(3) + 1.0), 0, 0]);
+          spineBar(g, prog(t, cue(2), cue(2) + 1.2), col, [nA, nA * nOut, nA * nOut], [prog(t, cue(3) + .3, cue(3) + 1.0), 0, 0], { crack: prog(t, cue(2) + .7, cue(2) + 1.3) });
           for (let i = 0; i < 10; i++) {
-            const x = SLOT(i), kf = [[.15 + i * .1, x - 1300], [2.0 + i * .06, x, E.out]];
-            const g0 = i < 2, rest = g0 ? poseMix(POSES.stand, POSES.cross, E.inOut(prog(t, cue(3) + .4, cue(3) + 1.0))) : POSES.stand;
+            const x = SLOT(i), grp = i < 2 ? 0 : i < 4 ? 1 : 2;
+            // Definitely Buy stride in first, phones out; Confused overshoot and wander back; Never Buy trail in last, slouching
+            const kf = grp === 1 ? [[.1 + (i - 2) * .08, x - 1300], [1.5 + (i - 2) * .06, x, E.out]]
+                     : grp === 0 ? [[.5 + i * .12, x - 1300], [2.3 + i * .05, x, E.out]]
+                     : [[.15 + i * .08, x - 1300], [1.9 + i * .05, x + 46, E.out], [2.6 + i * .05, x, E.inOut]];
+            let rest = POSES.stand;
+            if (grp === 0) rest = poseMix(poseMix(POSES.stand, POSES.slump, .35), POSES.cross, E.inOut(prog(t, cue(3) + .4, cue(3) + 1.0)));
             const w = walker(kf, t, .75, rest, 1);
-            const colr = g0 ? (red0 > .5 ? PAL.red : PAL.ink) : rgba(PAL.ink, 1 - .55 * red0);
-            const F = { x: w.x, y: GY, s: .75, pose: idle(w.pose, t, i), facing: w.facing, color: colr, expr: 'neutral', t, wear: WEAR[i] };
-            if (g0) neverBuyer(g, F, prog(t, cue(3) + 1.2, cue(3) + 1.7)); else person(g, F);
+            let pose = w.pose, facing = w.facing, px = w.x;
+            if (grp === 2 && t > 2.8) { const on = .45 * prog(t, 2.8, 3.4), pc = pacing(x, t, i, on); px = pc.x; facing = on > .05 ? pc.facing : facing; pose = poseMix(pose, pc.pose, on); }
+            const colr = grp === 0 ? (red0 > .5 ? PAL.red : PAL.ink) : rgba(PAL.ink, 1 - .55 * red0);
+            const F = { x: px, y: GY, s: .75, pose: idle(pose, t, i), facing, color: colr, seed: i, wear: WEAR[i],
+              expr: grp === 2 && t > 2.8 ? 'confused' : (grp === 1 ? 'happy' : 'neutral') };
+            if (grp === 1) sureBuyer(g, F, 1); else person(g, F);
           }
         });
         subline(g, 'Let me explain it with a diagram', 960, 210, prog(t, .3, .9), prog(t, cue(2) - .3, cue(2)), { align: 'center', size: 44, color: PAL.gray, face: 'label' });
@@ -213,37 +286,40 @@ function buildScenes() {
         headline(g, '20% NEVER BUY', 140, 220, prog(t, cue(3) + .3, cue(3) + 1.3), { size: 92, red: [1, 2] });
       } },
 
-    /* 2. NEVER BUY  (cues 4-7)  nobody knows why they're here; no need, can't pay; won't buy; sales not needed */
+    /* 2. NEVER BUY  (cues 4-7)  nobody knows why they're here; no need, empty wallet; pitches bounce off; sales not needed */
     { id: 'never', start: cue(4) - TR, end: cue(8) - .001, enter: { type: 'iris', x: 400, y: 640, dur: TR },
       camera: t => { const a = t + cue(4) - TR; return tween([[cue(4) - TR, { x: 0, y: 0, z: 1.08 }], [cue(4) + 1.5, { x: 0, y: 0, z: 1 }], [cue(6) + 1.0, { x: 0, y: 0, z: 1 }],
         [cue(6) + 2.6, { x: -60, y: 70, z: 1.12 }], [cue(7) + .2, { x: -60, y: 70, z: 1.12 }], [cue(7) + 1.4, { x: 0, y: 0, z: 1 }]], a); },
       draw(g, t0, T, c) {
-        const t = t0 + cue(4) - TR; dotGrid(g, c);
-        const hx = 620, usKf = [[cue(6), 1420], [cue(6) + 1.4, 1060, E.out]];
+        const t = t0 + cue(4) - TR; NOW = t; dotGrid(g, c);
+        const hx = 760, S = 1.15, usKf = [[cue(6), 1420], [cue(6) + 1.4, 1160, E.out], [cue(7) + 1.4, 1160], [cue(7) + 4.4, 1420, E.inOut]];
+        const within = (a, b) => t >= a && t < b;
         world(g, c, () => {
           groundLine(g, GY, 1);
-          // hero: a Never Buy buyer (red)
+          // hero: a Never Buy buyer (red, bucket hat)
           let hp = POSES.stand;
-          hp = poseMix(hp, POSES.shrug, E.inOut(prog(t, cue(4) + .1, cue(4) + .6)));
+          hp = poseMix(hp, POSES.shrug, E.inOut(prog(t, cue(4) + 1.3, cue(4) + 1.8)));     // looks around, then shrugs
           hp = poseMix(hp, POSES.stop, E.inOut(prog(t, cue(5), cue(5) + .5)));            // "no need"
-          hp = poseMix(hp, POSES.shrug, E.inOut(prog(t, cue(5) + 1.3, cue(5) + 1.8)));     // "can't pay": pockets out
+          hp = poseMix(hp, POSES.reach, E.inOut(prog(t, cue(5) + 1.2, cue(5) + 1.6)));     // "can't pay": shows an empty wallet
           hp = poseMix(hp, POSES.stop, E.inOut(prog(t, cue(6) + 1.0, cue(6) + 1.4)));      // palm up to the pitch
           hp = poseMix(hp, POSES.cross, E.inOut(prog(t, cue(6) + 3.7, cue(6) + 4.2)));     // turns away, arms crossed
-          const hexpr = t < cue(5) ? 'confused' : (t > cue(6) + 1.0 ? 'angry' : 'neutral');
-          const hface = t > cue(6) + 3.8 ? -1 : 1;
-          const hr = neverBuyer(g, { x: hx, y: GY, s: 1.15, pose: idle(hp, t, 1), facing: hface, color: PAL.red, expr: hexpr, t, wear: 'bucket' }, prog(t, cue(5) + 1.3, cue(5) + 1.9));
-          // us (ink): a salesperson, labelled US
-          const uw = walker(usKf, t, 1.15, POSES.reach, -1);
-          let up = t < cue(6) ? poseMix(POSES.stand, POSES.shrug, E.inOut(prog(t, cue(4) + .5, cue(4) + 1.0))) : uw.pose;
+          const hexpr = t < cue(5) ? 'confused' : (t > cue(6) + 1.0 ? 'angry' : (t > cue(5) + 1.6 ? 'sad' : 'neutral'));
+          const hface = within(cue(4) + .3, cue(4) + 1.1) || t > cue(6) + 3.8 ? -1 : 1;
+          const hr = neverBuyer(g, { x: hx, y: GY, s: S, pose: idle(hp, t, 1), facing: hface, color: PAL.red, expr: hexpr, seed: 1, wear: 'bucket' });
+          emptyWallet(g, hr.handF[0], hr.handF[1], 1, prog(t, cue(5) + 1.3, cue(5) + 1.8) * (1 - prog(t, cue(6) + .6, cue(6) + .9)), E.inOut(prog(t, cue(5) + 1.9, cue(5) + 2.5)));
+          // SALES: red tie + briefcase; looks around too on cue 4
+          const uw = walker(usKf, t, S, POSES.reach, -1);
+          let up = t < cue(6) ? poseMix(POSES.stand, POSES.shrug, E.inOut(prog(t, cue(4) + 1.5, cue(4) + 2.0))) : uw.pose;
           up = poseMix(up, POSES.slump, E.inOut(prog(t, cue(7) + .1, cue(7) + .7)));
-          const ux = t < cue(6) ? 1420 : uw.x;
-          const ur = salesman(g, { x: ux, y: GY, s: 1.15, pose: idle(up, t, 2), facing: -1, expr: t > cue(7) ? 'sad' : (t < cue(5) ? 'confused' : 'happy') });
+          if (t > cue(7) + 1.4) up = poseMix(uw.pose, POSES.slump, .8);
+          const ux = t < cue(6) ? 1420 : uw.x, uface = within(cue(4) + .7, cue(4) + 1.5) || within(cue(7) + 1.4, cue(7) + 4.4) ? 1 : -1;
+          const ur = salesman(g, { x: ux, y: GY, s: S, pose: idle(up, t, 2), facing: uface, seed: 2, expr: t > cue(7) ? 'sad' : (t < cue(5) ? 'confused' : 'happy') });
           tag(g, 'SALES', ux, GY + 70, prog(t, cue(4) + .4, cue(4) + .8), { size: 30 });
           briefcase(g, 1520, GY, 1, 1);
           tag(g, 'NEVER BUY', hx, GY + 70, prog(t, cue(4) + .2, cue(4) + .6), { size: 30, bg: PAL.red });
-          // cue 4: "?" for both of them
+          // cue 4: "?" for both of them, after they look around
           const qOut = 1 - prog(t, cue(5) - .3, cue(5));
-          [[hr, 1, cue(4) + .2], [ur, -1, cue(4) + .9]].forEach(([r, d, a]) => thoughtBubble(g, r.head[0] + 40 * d, r.head[1] - 40, r.head[0] + 150 * d, r.head[1] - 150, 64, prog(t, a, a + 1.0) * qOut, (g2, rr, q) => {
+          [[hr, 1, cue(4) + 1.4], [ur, -1, cue(4) + 1.7]].forEach(([r, d, a]) => thoughtBubble(g, r.head[0] + 40 * d, r.head[1] - 40, r.head[0] + 150 * d, r.head[1] - 150, 64, prog(t, a, a + 1.0) * qOut, (g2, rr, q) => {
             g2.globalAlpha *= q; g2.font = font('head', 84); g2.fillStyle = PAL.red; g2.textAlign = 'center'; g2.textBaseline = 'middle'; g2.fillText('?', 0, 6); }));
           // cue 6: product pitches fly from the salesman's hand, bounce off the raised palm and drop, going gray
           for (let k = 0; k < 3; k++) {
@@ -255,14 +331,12 @@ function buildScenes() {
             else { x = hitX + 90 * fall; y = hitY + (GY - 40 - hitY) * fall * fall - Math.sin(Math.PI * fall) * 60; col = PAL.gray; }
             pitchBubble(g, x, y, 1.4, col, 1 - prog(fall, .75, 1));
           }
-          crossMark(g, (hx + 1060) / 2, 590, 90, prog(t, cue(7) + .5, cue(7) + 1.1));
+          stampX(g, (hx + 1160) / 2, 590, 90, prog(t, cue(7) + .5, cue(7) + .9));
         });
-        subline(g, '20% NEVER BUY', 140, 150, 1, 0, { face: 'label', size: 30, color: PAL.gray });
         const hA = (a, b) => 1 - prog(t, a, b);
         fadeAlpha(g, hA(cue(5) - .3, cue(5)), () => {
           headline(g, 'WHY ARE THEY HERE?', 140, 240, prog(t, cue(4) + .1, cue(4) + 1.0), { size: 84, red: [3] });
-          subline(g, "They don't know.", 140, 312, prog(t, cue(4) + 1.2, cue(4) + 1.7), 0, { size: 40 });
-          subline(g, "We don't know.", 140, 362, prog(t, cue(4) + 1.9, cue(4) + 2.4), 0, { size: 40 });
+          subline(g, "Not them. Not us.", 140, 312, prog(t, cue(4) + 1.6, cue(4) + 2.1), 0, { size: 40 });
         });
         fadeAlpha(g, hA(cue(6) - .3, cue(6)), () => headline(g, "NO NEED. CAN'T PAY.", 140, 240, prog(t, cue(5) + .1, cue(5) + 1.0), { size: 84, red: [3] }));
         fadeAlpha(g, hA(cue(7) - .3, cue(7)), () => {
@@ -273,142 +347,200 @@ function buildScenes() {
         subline(g, 'Our effort here = waste of time', 140, 312, prog(t, cue(7) + 1.4, cue(7) + 1.9), 0, { size: 40 });
       } },
 
-    /* 3. DEFINITELY BUY  (cues 8-12)  like an Amazon buyer: decide -> see the product -> search ... features -> purchase */
+    /* 3. DEFINITELY BUY  (cues 8-12)  like an Amazon buyer: buy (not just cart), decide, look, search ... features -> purchase */
     { id: 'definite', start: cue(8) - TR, end: cue(13) - .001, enter: { type: 'wipe', dur: TR },
-      camera: t => tween([[0, { x: 0, y: 0, z: 1.06 }], [2.2, { x: 0, y: 0, z: 1 }], [cue(11) - cue(8) + TR, { x: 0, y: 0, z: 1 }], [cue(11) - cue(8) + TR + 1.6, { x: 90, y: 30, z: 1.06 }]], t),
+      camera: t => tween([[0, { x: 0, y: 0, z: 1.06 }], [2.2, { x: 0, y: 0, z: 1 }], [cue(11) - cue(8) + TR, { x: 0, y: 0, z: 1 }], [cue(11) - cue(8) + TR + 1.6, { x: 90, y: 30, z: 1.06 }],
+        [cue(12) - cue(8) + TR + .2, { x: 90, y: 30, z: 1.06 }], [cue(12) - cue(8) + TR + 1.4, { x: 0, y: 0, z: 1 }]], t),
       draw(g, t0, T, c) {
-        const t = t0 + cue(8) - TR; dotGrid(g, c);
+        const t = t0 + cue(8) - TR; NOW = t; dotGrid(g, c);
         const SX = 960, SY = 300, SW = 760, SH = 520;
+        const rows = [['WANT IT', cue(10) + 1.6], ['SEE PRODUCT', cue(10) + 3.0], ['SEARCH', cue(11) + .1], ['DESCRIPTION', cue(11) + 1.1], ['DETAILS', cue(11) + 2.4], ['FEATURES', cue(11) + 3.6]];
         world(g, c, () => {
           groundLine(g, GY, 1);
-          const w = walker([[cue(8) + .1, -200], [cue(8) + 2.0, 560, E.out]], t, 1.15, POSES.stand, 1);
+          const w = walker([[cue(8) + .1, -200], [cue(8) + 2.0, 520, E.out], [cue(9) + 1.4, 520], [cue(9) + 3.2, 580, E.inOut]], t, 1.15, POSES.stand, 1);
           let pose = w.pose;
           pose = poseMix(pose, POSES.think, E.inOut(prog(t, cue(9) + .8, cue(9) + 1.3)));
-          pose = poseMix(pose, POSES.point, E.inOut(prog(t, cue(10) + .6, cue(10) + 1.1)));
+          pose = poseMix(pose, POSES.point, E.inOut(prog(t, cue(10) + 1.4, cue(10) + 1.9)));
           pose = poseMix(pose, POSES.reach, E.inOut(prog(t, cue(12) + .1, cue(12) + .5)));
-          pose = poseMix(pose, POSES.cheer, E.inOut(prog(t, cue(12) + .6, cue(12) + 1.0)) * (1 - E.inOut(prog(t, cue(12) + 1.6, cue(12) + 2.1))));   // quick cheer, then holds the bag
-          const hr3 = person(g, { x: w.x, y: GY, s: 1.15, pose: idle(pose, t, 3), facing: 1, color: PAL.red, expr: t > cue(12) + 1.0 ? 'happy' : 'neutral', wear: 'specs' });
-          shopBag(g, hr3.handF[0], hr3.handF[1], 1, prog(t, cue(12) + 1.9, cue(12) + 2.3));
+          pose = poseMix(pose, POSES.cheer, E.inOut(prog(t, cue(12) + 1.3, cue(12) + 1.7)) * (1 - E.inOut(prog(t, cue(12) + 2.2, cue(12) + 2.6))));
+          // a small nod as each step is ticked
+          const nod = rows.reduce((s, [, a]) => s + Math.sin(Math.PI * prog(t, a + .2, a + .6)) * 12, 0);
+          pose = Object.assign({}, pose, { head: (pose.head || 0) + nod });
+          const hr3 = person(g, { x: w.x, y: GY, s: 1.15, pose: idle(pose, t, 3), facing: 1, color: PAL.red, seed: 3, expr: t > cue(12) + 1.3 ? 'happy' : 'neutral', wear: 'specs' });
+          // purchase: the product flies from the PURCHASE button into the hero's hand, then the bag
+          const fly = prog(t, cue(12) + .6, cue(12) + 1.3);
+          if (fly > 0 && fly < 1) { const fx = lerp(SX + SW - 190, hr3.handF[0], E.inOut(fly)), fy = lerp(SY + SH - 60, hr3.handF[1], E.inOut(fly)) - Math.sin(Math.PI * fly) * 160;
+            fillPoly(g, rrectPoly(fx - 24, fy - 20, 48, 40, 6), PAL.ink); fillPoly(g, rrectPoly(fx - 5, fy - 20, 10, 40, 2), PAL.red); }
+          const held = t >= cue(12) + 1.3 && t < cue(12) + 2.6;      // product in hand during the cheer, then it goes in the bag
+          if (held) { const [px2, py2] = hr3.handF; fillPoly(g, rrectPoly(px2 - 24, py2 - 44, 48, 40, 6), PAL.ink); fillPoly(g, rrectPoly(px2 - 5, py2 - 44, 10, 40, 2), PAL.red); }
+          shopBag(g, hr3.handF[0], hr3.handF[1], 1, prog(t, cue(12) + 2.6, cue(12) + 3.0));
+          // "buy, not just cart": the product sits in a cart; the cart is crossed out
+          const cp = prog(t, cue(10) + .1, cue(10) + .5) * (1 - prog(t, cue(11) - .4, cue(11)));
+          cart(g, 300, 540, 1, cp);
+          fadeAlpha(g, cp, () => crossMark(g, 300, 480, 80, prog(t, cue(10) + .7, cue(10) + 1.2), 16));
           browserWin(g, SX, SY, SW, SH, 'AMAZON', prog(t, cue(9) + .2, cue(9) + .8), (x, y, w2, h2) => {
-            const rows = [['DECIDE: I WANT IT', cue(10) + .2], ['SEE THE PRODUCT', cue(10) + 2.4], ['SEARCH', cue(11) + .1], ['DESCRIPTION', cue(11) + 1.1], ['DETAILS', cue(11) + 2.4], ['FEATURES', cue(11) + 3.6]];
-            rows.forEach(([s, a], i) => checkRow(g, s, x + 40, y + 46 + i * 60, prog(t, a, a + .6), { size: 32 }));
+            const pp = prog(t, cue(9) + 1.0, cue(9) + 1.5) * (1 - prog(t, cue(10) + 1.0, cue(10) + 1.5));
+            if (pp > 0) popAt(g, x + w2 / 2, y + h2 / 2, E.back(pp), () => { const by = y + h2 / 2 + Math.sin(t * 3) * 8;
+              fillPoly(g, rrectPoly(x + w2 / 2 - 90, by - 70, 180, 140, 18), PAL.ink); fillPoly(g, rrectPoly(x + w2 / 2 - 18, by - 70, 36, 140, 6), PAL.red); });
+            fadeAlpha(g, 1 - .75 * prog(t, cue(12), cue(12) + .1), () => rows.forEach(([s, a], i) => checkRow(g, s, x + 40, y + 46 + i * 60, prog(t, a, a + .6), { size: 32 })));
             const bp = prog(t, cue(12) + .1, cue(12) + .6);
             if (bp > 0) popAt(g, x + w2 - 190, y + h2 - 62, E.back(bp), () => {
               fillPoly(g, rrectPoly(x + w2 - 330, y + h2 - 100, 280, 76, 38), PAL.red);
               g.font = font('head', 34); g.fillStyle = PAL.cream; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('PURCHASE', x + w2 - 190, y + h2 - 60);
             });
-            badge(g, x + w2 - 60, y + h2 - 130, prog(t, cue(12) + 1.0, cue(12) + 1.6), 'tick', PAL.ink, PAL.cream, 30);
           });
         });
         miniBar(g, 1, prog(t, cue(8) + .4, cue(8) + 1.0));
         fadeAlpha(g, 1 - prog(t, cue(9) - .3, cue(9)), () => headline(g, '20% DEFINITELY BUY', 140, 240, prog(t, cue(8) + .1, cue(8) + 1.1), { size: 84, red: [1, 2] }));
-        headline(g, 'LIKE AN AMAZON BUYER', 140, 240, prog(t, cue(9) + .1, cue(9) + 1.1), { size: 72, red: [2], maxW: 760 });
-        subline(g, 'Really buying, not just adding to cart', 140, 400, prog(t, cue(10) + .1, cue(10) + .6), prog(t, cue(12) - .3, cue(12)), { size: 34 });
-        subline(g, 'Looks good → purchase → done', 140, 400, prog(t, cue(12) + .6, cue(12) + 1.1), 0, { size: 34, face: 'label', color: PAL.red });
+        headline(g, 'LIKE AMAZON BUYERS', 140, 240, prog(t, cue(9) + .1, cue(9) + 1.1), { size: 72, red: [1], maxW: 760 });
+        tag(g, 'NOT JUST CART', 300, 610, prog(t, cue(10) + .9, cue(10) + 1.3) * (1 - prog(t, cue(11) - .4, cue(11))), { size: 28 });
       } },
 
-    /* 4. THEY COME TO US AS A LEAD  (cues 13-16)  about us, what we sell -> lead -> no feature selling -> what + how much -> buy */
+    /* 4. THEY COME TO US AS A LEAD  (cues 13-16)  the Amazon window becomes OUR WEBSITE -> LEAD ticket handed over -> features scroll waved off -> handshake */
     { id: 'lead', start: cue(13) - TR, end: cue(17) - .001, enter: { type: 'iris', x: 1340, y: 560, dur: TR },
-      camera: t => { const a = t + cue(13) - TR; return tween([[cue(13) - TR, { x: 0, y: 0, z: 1.08 }], [cue(13) + 1.5, { x: 0, y: 0, z: 1 }], [cue(14) + 1.6, { x: 0, y: 0, z: 1 }],
-        [cue(14) + 3.8, { x: 40, y: 30, z: 1.03 }], [cue(15) + .2, { x: 40, y: 30, z: 1.03 }], [cue(15) + 1.4, { x: 0, y: 0, z: 1 }]], a); },
+      camera: t => { const a = t + cue(13) - TR; return tween([[cue(13) - TR, { x: 0, y: 0, z: 1.04 }], [cue(13) + 1.5, { x: 0, y: 0, z: 1 }], [cue(14) + 1.6, { x: -40, y: 10, z: 1.03 }],
+        [cue(14) + 3.8, { x: 60, y: 30, z: 1.04 }], [cue(16) + 2.0, { x: 60, y: 30, z: 1.04 }], [cue(16) + 2.8, { x: 120, y: 60, z: 1.1 }]], a); },
       draw(g, t0, T, c) {
-        const t = t0 + cue(13) - TR; dotGrid(g, c);
+        const t = t0 + cue(13) - TR; NOW = t; dotGrid(g, c);
+        const S = 1.1;
         world(g, c, () => {
           groundLine(g, GY, 1);
-          browserWin(g, 150, 380, 560, 400, 'OUR WEBSITE', prog(t, cue(13) + .1, cue(13) + .6) * (1 - prog(t, cue(15) - .5, cue(15))), (x, y) => {
-            checkRow(g, 'ABOUT US', x + 40, y + 70, prog(t, cue(13) + 1.0, cue(13) + 1.6));
-            checkRow(g, 'WHAT WE SELL', x + 40, y + 150, prog(t, cue(13) + 2.6, cue(13) + 3.2));
-            checkRow(g, 'DECIDED ON US', x + 40, y + 230, prog(t, cue(14) + .4, cue(14) + 1.0));
-          });
-          // the buyer walks from our website to us
-          const w = walker([[cue(14) + 1.6, 860], [cue(14) + 3.8, 1180, E.out]], t, 1.1, POSES.stand, 1);
+          // the same window morphs from AMAZON into OUR WEBSITE (same way of buying)
+          const m = E.inOut(prog(t, cue(13) + .2, cue(13) + 1.2)), wa = (1 - .72 * prog(t, cue(14) + 1.8, cue(14) + 2.3)) * (1 - prog(t, cue(15) - .5, cue(15)));
+          const [wx, wy, ww, wh] = mix([960, 300, 760, 520], [150, 380, 560, 400], m);
+          if (wa > 0) fadeAlpha(g, wa, () => browserWin(g, wx, wy, ww, wh, m < .5 ? 'AMAZON' : 'OUR WEBSITE', 1, (x, y) => {
+            if (m < 1) return;
+            checkRow(g, 'ABOUT US', x + 40, y + 70, prog(t, cue(13) + 1.3, cue(13) + 1.8));
+            checkRow(g, 'WHAT WE SELL', x + 40, y + 150, prog(t, cue(13) + 2.8, cue(13) + 3.3));
+            checkRow(g, 'DECIDED', x + 40, y + 230, prog(t, cue(14) + .4, cue(14) + 1.0));
+          }));
+          // buyer (glasses, phone) walks from our website to SALES and hands over a LEAD ticket
+          const w = walker([[cue(14) + 1.6, 860], [cue(14) + 3.8, 1300, E.out], [cue(15) + .1, 1300], [cue(15) + 1.0, 1170, E.out], [cue(16) + 1.0, 1170], [cue(16) + 2.2, 1300, E.out]], t, S, POSES.stand, 1);
           let pose = poseMix(w.pose, POSES.think, E.inOut(prog(t, cue(13) + .4, cue(13) + .9)) * (1 - prog(t, cue(14) + 1.0, cue(14) + 1.5)));
-          pose = poseMix(pose, POSES.cheer, E.inOut(prog(t, cue(16) + 2.6, cue(16) + 3.1)));
-          const hr = sureBuyer(g, { x: w.x, y: GY, s: 1.1, pose: idle(pose, t, 4), facing: t < cue(14) + 1.2 ? -1 : 1, color: PAL.red, expr: t > cue(14) + .9 ? 'happy' : 'neutral', wear: 'specs' },
-            prog(t, cue(14) + 1.0, cue(14) + 1.6) * (1 - prog(t, cue(16) + 2.4, cue(16) + 2.6)));
-          tag(g, 'LEAD', w.x, hr.head[1] - 110, prog(t, cue(14) + 3.6, cue(14) + 4.1) * (1 - prog(t, cue(16) - .3, cue(16))), { bg: PAL.red, size: 40 });
-          // us
-          let up = poseMix(POSES.stand, POSES.stop, E.inOut(prog(t, cue(15) + .2, cue(15) + .7)));
-          up = poseMix(up, POSES.point, E.inOut(prog(t, cue(16), cue(16) + .5)));
-          const ur = salesman(g, { x: 1560, y: GY, s: 1.1, pose: idle(up, t, 5), facing: -1, expr: t > cue(16) + 2.6 ? 'happy' : 'neutral' });
+          const nod4 = [cue(13) + 1.3, cue(13) + 2.8, cue(14) + .4].reduce((s, a) => s + Math.sin(Math.PI * prog(t, a + .2, a + .6)) * 12, 0);
+          pose = Object.assign({}, pose, { head: (pose.head || 0) + nod4 });
+          pose = poseMix(pose, POSES.reach, E.inOut(prog(t, cue(14) + 3.4, cue(14) + 3.8)) * (1 - E.inOut(prog(t, cue(15), cue(15) + .4))));
+          pose = poseMix(pose, POSES.stop, E.inOut(prog(t, cue(15) + 1.3, cue(15) + 1.7)) * (1 - E.inOut(prog(t, cue(15) + 3.0, cue(15) + 3.4))));
+          pose = poseMix(pose, POSES.reach, E.inOut(prog(t, cue(16) + 2.2, cue(16) + 2.6)));
+          const hr = sureBuyer(g, { x: w.x, y: GY, s: S, pose: idle(pose, t, 4), facing: t < cue(14) + 1.2 ? -1 : 1, color: PAL.red, seed: 4, wear: 'specs',
+              expr: t > cue(14) + .9 ? (t > cue(15) + 1.3 && t < cue(15) + 3.0 ? 'neutral' : 'happy') : 'neutral' },
+            prog(t, cue(14) + 1.0, cue(14) + 1.6) * (1 - prog(t, cue(14) + 3.0, cue(14) + 3.3)));
+          // SALES (same scale as the buyer)
+          let up = POSES.stand;
+          up = poseMix(up, POSES.reach, E.inOut(prog(t, cue(14) + 3.9, cue(14) + 4.3)));                 // takes the ticket, then holds up the scroll
+          up = poseMix(up, POSES.point, E.inOut(prog(t, cue(16), cue(16) + .4)));
+          up = poseMix(up, POSES.reach, E.inOut(prog(t, cue(16) + 2.2, cue(16) + 2.6)));
+          const ur = salesman(g, { x: 1560, y: GY, s: S, pose: idle(up, t, 5), facing: -1, seed: 5, expr: t > cue(14) + 4.4 ? 'happy' : 'neutral' });
           tag(g, 'SALES', 1560, GY + 70, prog(t, cue(13) + .3, cue(13) + .7), { size: 30 });
           briefcase(g, 1690, GY, 1, 1);
-          featureCard(g, 220, 440, prog(t, cue(15) + .2, cue(15) + .7) * (1 - prog(t, cue(16) - .3, cue(16))), prog(t, cue(15) + 2.0, cue(15) + 2.8));
-          speechBubble(g, 'WHAT IT IS', 1500, 320, ur.head[0] - 30, ur.head[1] - 20, prog(t, cue(16) + .2, cue(16) + .6), { size: 34 });
-          speechBubble(g, 'HOW MUCH', 1250, 410, ur.head[0] - 60, ur.head[1] - 30, prog(t, cue(16) + 1.4, cue(16) + 1.8), { size: 34 });
-          badge(g, hr.head[0] - 110, hr.head[1] - 30, prog(t, cue(16) + 3.0, cue(16) + 3.6), 'tick', PAL.red, PAL.cream, 34);
+          // the LEAD ticket: appears in the buyer's hand, travels to the salesman's hand
+          const lp = prog(t, cue(14) + 3.6, cue(14) + 3.9) * (1 - prog(t, cue(15) - .3, cue(15))), lm = E.inOut(prog(t, cue(14) + 4.0, cue(14) + 4.7));
+          tag(g, 'LEAD', lerp(hr.handF[0], ur.handF[0], lm), lerp(hr.handF[1], ur.handF[1], lm) - 70, lp, { bg: PAL.red, size: 38 });
+          // features scroll: unrolls from the salesman's hand, waved off, crossed, rolled back up
+          const L = 300 * E.out(prog(t, cue(15) + .2, cue(15) + 1.2)) * (1 - E.inOut(prog(t, cue(15) + 2.8, cue(15) + 3.4)));
+          featureScroll(g, ur.handF[0] - 95, ur.handF[1] + 10, L);
+          crossMark(g, ur.handF[0] - 95, ur.handF[1] + 170, 70, prog(t, cue(15) + 1.8, cue(15) + 2.3) * (1 - prog(t, cue(15) + 2.8, cue(15) + 3.0)), 16);
+          // what + how much, then a handshake
+          speechBubble(g, 'WHAT IT IS', 1660, 320, ur.head[0] + 10, ur.head[1] - 30, prog(t, cue(16) + .2, cue(16) + .6) * (1 - prog(t, cue(16) + 2.0, cue(16) + 2.3)), { size: 34 });
+          speechBubble(g, 'HOW MUCH', 1500, 405, ur.head[0] - 30, ur.head[1] - 30, prog(t, cue(16) + 1.2, cue(16) + 1.6) * (1 - prog(t, cue(16) + 2.0, cue(16) + 2.3)), { size: 34 });
+          const shake = prog(t, cue(16) + 2.6, cue(16) + 2.8);
+          if (shake > 0) { const mx = (hr.handF[0] + ur.handF[0]) / 2, my = (hr.handF[1] + ur.handF[1]) / 2 + Math.sin(t * 18) * 5 * (1 - prog(t, cue(16) + 3.6, cue(16) + 3.8));
+            g.beginPath(); g.arc(mx, my, 14 * E.back(shake), 0, 7); g.fillStyle = PAL.ink; g.fill();
+            badge(g, mx, my - 120, prog(t, cue(16) + 3.0, cue(16) + 3.5), 'tick', PAL.red, PAL.cream, 34); }
         });
         miniBar(g, 1, 1);
         const hA = (a, b) => 1 - prog(t, a, b);
         fadeAlpha(g, hA(cue(14) + 2.0, cue(14) + 2.3), () => {
           headline(g, 'SAME WITH US', 140, 240, prog(t, cue(13) + .1, cue(13) + 1.0), { size: 84, red: [2] });
-          subline(g, 'They check everything about us', 140, 312, prog(t, cue(13) + 1.2, cue(13) + 1.7), 0, { size: 40 });
         });
         fadeAlpha(g, hA(cue(15) - .3, cue(15)), () => headline(g, 'THEY COME AS A LEAD', 140, 240, prog(t, cue(14) + 2.3, cue(14) + 3.2), { size: 80, red: [4] }));
         fadeAlpha(g, hA(cue(16) - .3, cue(16)), () => headline(g, 'NO NEED TO SELL FEATURES', 140, 240, prog(t, cue(15) + .1, cue(15) + 1.0), { size: 72, red: [4], maxW: 1150 }));
         headline(g, "THEY'LL SURELY BUY", 140, 240, prog(t, cue(16) + .1, cue(16) + 1.0), { size: 80, red: [1] });
-        subline(g, 'Just say what it is and how much', 140, 312, prog(t, cue(16) + .5, cue(16) + 1.0), 0, { size: 40 });
         tag(g, 'DEFINITELY BUY', 960, 990, prog(t, cue(16) + 3.6, cue(16) + 4.1), { size: 34 });
       } },
 
-    /* 5. CONFUSED BUYERS  (cues 17-20)  the bar returns; the 60% light up; their five questions */
+    /* 5. CONFUSED BUYERS  (cues 17-20)  the bar returns; the 60% light up and pace; five questions with pictures */
     { id: 'confused', start: cue(17) - TR, end: cue(21) - .001, enter: { type: 'wipe', dur: TR },
       camera: t => { const a = t + cue(17) - TR; return tween([[cue(17) - TR, { x: 0, y: 0, z: 1.05 }], [cue(17) + 1.3, { x: 0, y: 0, z: 1 }], [cue(18), { x: 0, y: 0, z: 1 }],
         [cue(18) + 1.2, { x: 40, y: 30, z: 1.06 }], [cue(20), { x: 120, y: 30, z: 1.06 }], [cue(21), { x: 60, y: 20, z: 1.03 }]], a); },
       draw(g, t0, T, c) {
-        const t = t0 + cue(17) - TR; dotGrid(g, c);
+        const t = t0 + cue(17) - TR; NOW = t; dotGrid(g, c);
         const r6 = prog(t, cue(17), cue(17) + .6);
         world(g, c, () => {
           groundLine(g, GY, 1);
-          spineBar(g, 1, [rgba(PAL.gray, .9), rgba(PAL.gray, .9), r6 > .5 ? PAL.red : PAL.ink], 1, [1, 1, prog(t, cue(17) + .3, cue(17) + 1.0)]);
+          const labA = 1 - prog(t, cue(18) - .4, cue(18));
+          spineBar(g, 1, [rgba(PAL.gray, .9), rgba(PAL.gray, .9), r6 > .5 ? PAL.red : PAL.ink], 1, [labA, labA, prog(t, cue(17) + .3, cue(17) + 1.0) * labA]);
           const heads = [];
           for (let i = 0; i < 10; i++) {
             const conf = i >= 4, on = conf ? E.inOut(prog(t, cue(17) + .4 + (i - 4) * .1, cue(17) + 1.0 + (i - 4) * .1)) : 0;
             const pc = pacing(SLOT(i), t, i, on);
-            const F = { x: conf ? pc.x : SLOT(i), y: GY, s: .75, pose: idle(conf ? pc.pose : (i < 2 ? POSES.cross : POSES.stand), t, i), facing: conf ? pc.facing : 1,
-              color: conf ? (r6 > .5 ? PAL.red : PAL.ink) : rgba(PAL.gray, .9), expr: conf && t > cue(17) + .5 ? 'confused' : 'neutral', t, wear: WEAR[i] };
-            const r = conf ? person(g, F) : (i < 2 ? neverBuyer(g, F, 1) : sureBuyer(g, F, 1));
+            const F = { x: conf ? pc.x : SLOT(i), y: GY, s: .75, pose: idle(conf ? pc.pose : (i < 2 ? POSES.cross : POSES.stand), t, i), facing: conf ? pc.facing : 1, seed: i,
+              color: conf ? (r6 > .5 ? PAL.red : PAL.ink) : rgba(PAL.gray, .9), expr: conf && t > cue(17) + .5 ? 'confused' : 'neutral', wear: WEAR[i] };
+            const r = conf ? person(g, F) : (i < 2 ? neverBuyer(g, F) : sureBuyer(g, F, 1));
             heads.push(r.head);
           }
-          const Q = [['Do I need it?', 760, 470, 4, cue(18) + .1], ['Buy it from whom?', 1180, 360, 6, cue(18) + 2.6],
-                     ['Will I use it?', 1590, 470, 8, cue(19) + .1], ['Now or later?', 1000, 560, 5, cue(20) + .1], ['Or something else?', 1460, 580, 9, cue(20) + 2.1]];
-          Q.forEach(([s, x, y, i, a]) => speechBubble(g, s, x, y, heads[i][0], heads[i][1] - 30, prog(t, a, a + .45), { size: 32 }));
+          const Q = [['Do I need it?', 760, 470, 4, cue(18) + .1, 'need'], ['Buy it from whom?', 1180, 360, 6, cue(18) + 2.6, 'whom'],
+                     ['Will I use it?', 1590, 470, 8, cue(19) + .1, 'use'], ['Now or later?', 1000, 560, 5, cue(20) + .1, 'when'], ['Or something else?', 1460, 580, 9, cue(20) + 2.1, 'else']];
+          const col = E.in(prog(t, cue(21) - .9, cue(21) - .3));     // questions get sucked into one knot
+          Q.forEach(([s, x, y, i, a, ic], k) => {
+            const next = Q[k + 1] ? Q[k + 1][4] : 1e9, dim = 1 - .72 * prog(t, next + 1.2, next + 1.6) * (1 - col);
+            const qx = lerp(x, 1180, col), qy = lerp(y, 460, col);
+            qBubble(g, s, qx, qy, heads[i][0], heads[i][1] - 30, prog(t, a, a + .45) * (1 - col), ic, dim);
+          });
         });
         headline(g, '60% CONFUSED BUYERS', 140, 220, prog(t, cue(17) + .1, cue(17) + 1.1), { size: 84, red: [1, 2] });
       } },
 
-    /* 6. WHY SALES EXISTS  (cues 21-24)  a knot of confusions -> help arrives -> knot straightens -> clarity, decision */
+    /* 6. WHY SALES EXISTS  (cues 21-24)  a ball of tangled thread -> SALES pulls the loose end, the ball unwinds -> straight thread -> it drops and becomes the 60% bar */
     { id: 'clarity', start: cue(21) - TR, end: cue(25), enter: { type: 'iris', x: 1180, y: 460, dur: TR },
       camera: t => { const a = t + cue(21) - TR; return tween([[cue(21) - TR, { x: 0, y: 0, z: 1.08 }], [cue(21) + 1.5, { x: 0, y: 0, z: 1 }], [cue(23), { x: 0, y: 0, z: 1 }],
-        [cue(23) + 1.2, { x: 120, y: 60, z: 1.08 }], [cue(24) + .2, { x: 120, y: 60, z: 1.08 }], [cue(24) + 1.6, { x: 0, y: 0, z: 1 }]], a); },
+        [cue(23) + 1.2, { x: 60, y: 40, z: 1.06 }], [cue(24) + .6, { x: 60, y: 40, z: 1.06 }], [cue(24) + 1.6, { x: 0, y: 0, z: 1 }]], a); },
       draw(g, t0, T, c) {
-        const t = t0 + cue(21) - TR; dotGrid(g, c);
-        const un = E.inOut(prog(t, cue(23) + .4, cue(23) + 1.8)), clear = t > cue(24) + .4;
+        const t = t0 + cue(21) - TR; NOW = t; dotGrid(g, c);
+        const S = .85, P0 = cue(23) + .5;
+        // unwinding progress with two tugs where the knot fights back
+        const un = tween([[P0, 0], [P0 + .5, .3], [P0 + .7, .22], [P0 + 1.2, .6], [P0 + 1.4, .52], [P0 + 2.2, 1]], t);
+        const clear = t > cue(24) + .1, drop = E.inOut(prog(t, cue(24) + 1.3, cue(24) + 2.1)), bar = prog(t, cue(24) + 1.9, cue(24) + 2.5);
+        const BX = 160, BW = 1100, R0 = 600, R1 = 1260;   // compact bar: the 60% segment runs R0..R1, under the six
         world(g, c, () => {
           groundLine(g, GY, 1);
+          if (bar > 0) spineBar(g, 1, [rgba(PAL.gray, .9), rgba(PAL.gray, .9), PAL.red], [bar, bar, 1], [0, 0, bar], { x: BX, w: BW, grow: bar, labSize: 28 });
           const heads = [];
           for (let i = 0; i < 6; i++) {
-            const calm = E.inOut(prog(t, cue(24) + .2 + i * .08, cue(24) + .8 + i * .08)), pc = pacing(640 + i * 128, t, i, 1 - calm);
-            const pose = poseMix(pc.pose, i % 2 ? POSES.cheer : POSES.stand, calm);
-            const r = person(g, { x: pc.x, y: GY, s: .8, pose: idle(pose, t, i), facing: calm > .5 ? 1 : pc.facing, color: PAL.red, expr: clear ? 'happy' : 'confused', wear: WEAR[4 + i] });
+            const calm = E.inOut(prog(t, cue(24) + .1 + i * .08, cue(24) + .7 + i * .08)), pc = pacing(660 + i * 118, t, i, 1 - calm);
+            const pose = poseMix(pc.pose, i % 2 ? POSES.cheer : POSES.stand, calm * (1 - .6 * prog(t, cue(24) + 2.4, cue(24) + 2.9)));
+            const r = person(g, { x: pc.x, y: GY, s: S, pose: idle(pose, t, i), facing: calm > .5 ? 1 : pc.facing, seed: 10 + i, color: PAL.red, expr: clear ? 'happy' : 'confused', wear: WEAR[4 + i] });
             heads.push(r.head);
           }
-          // SALES arrives, grabs the loose end of the tangle and pulls it straight
-          const w = walker([[cue(22) + .2, 2100], [cue(22) + 2.0, 1600, E.out], [cue(23) + .4, 1600], [cue(23) + 1.8, 1680]], t, 1.15, POSES.reach, -1);
+          // SALES (same scale as the group) walks in, takes the loose end, leans back and pulls
+          const w = walker([[cue(22) + .2, 2100], [cue(22) + 2.0, 1560, E.out], [P0, 1560], [P0 + 2.2, 1640]], t, S, POSES.reach, -1);
           let up = poseMix(w.pose, POSES.reach, E.inOut(prog(t, cue(22) + 1.8, cue(22) + 2.3)));
-          up = poseMix(up, POSES.slump, .25 * Math.sin(Math.PI * prog(t, cue(23) + .4, cue(23) + 1.8)));   // leans into the pull
-          up = poseMix(up, POSES.point, E.inOut(prog(t, cue(24) + 1.6, cue(24) + 2.1)));
-          let hand = [1500, 560];
-          if (t > cue(22)) hand = salesman(g, { x: w.x, y: GY, s: 1.15, pose: idle(up, t, 7), facing: -1, expr: 'happy' }).handF;
+          const lean = -12 * Math.sin(Math.PI * prog(t, P0, P0 + 2.2));
+          up = Object.assign({}, up, { lean: (up.lean || 0) + lean });
+          up = poseMix(up, POSES.stand, E.inOut(prog(t, cue(24) + 1.2, cue(24) + 1.6)));            // lets go as the thread drops
+          up = poseMix(up, POSES.point, E.inOut(prog(t, cue(24) + 2.4, cue(24) + 2.9)));
+          let hand = [1500, 600];
+          if (t > cue(22)) hand = salesman(g, { x: w.x, y: GY, s: S, pose: idle(up, t, 7), facing: -1, seed: 7, expr: 'happy' }).handF;
           tag(g, 'SALES', w.x, GY + 70, prog(t, cue(22) + 1.8, cue(22) + 2.2), { size: 30 });
-          const dp = prog(t, cue(21) + .1, cue(21) + 1.6), line = linePts2(520, 380, hand[0], hand[1]);
-          const pts = KNOT.map((p, i) => mix(p, line[i], un));
-          if (dp > 0) strokeOn(g, pts, un > 0 ? 1 : dp, PAL.ink, 8);
-          const grab = prog(t, cue(22) + 2.0, cue(22) + 2.6) * (1 - un);
-          if (grab > 0) strokeOn(g, [KNOT[KN - 1], hand], grab, PAL.ink, 6);
-          const mid = line[Math.floor(KN / 2)];
-          tag(g, 'CLARITY', mid[0], mid[1] - 70, prog(t, cue(24) + .1, cue(24) + .6), { size: 44, bg: PAL.red });
-          heads.forEach((h, i) => badge(g, h[0], h[1] - 100, prog(t, cue(24) + 1.3 + i * .12, cue(24) + 1.8 + i * .12), 'tick', PAL.red, PAL.cream, 22));
+          // the ball of thread: shrinks, rolls left and spins as it unwinds; the thread runs from the ball to the hand
+          const bx = lerp(960, 600, un), by = lerp(420, 380, un), br = 1 - un, spin = un * 9 + Math.sin(t * 2) * .15 * (1 - un);
+          const shakeB = (prog(t, P0 + .5, P0 + .7) - prog(t, P0 + .7, P0 + .9) + prog(t, P0 + 1.2, P0 + 1.4) - prog(t, P0 + 1.4, P0 + 1.6)) * 10;
+          const dp = prog(t, cue(21) + .1, cue(21) + 1.6);
+          if (drop <= 0) {
+            if (br > .02 && dp > 0) {
+              const pts = KNOT.map(([x, y]) => [bx + shakeB + (x * Math.cos(spin) - y * Math.sin(spin)) * br, by + (x * Math.sin(spin) + y * Math.cos(spin)) * br]);
+              strokeOn(g, pts, dp, PAL.ink, 8, false);
+            }
+            const grab = prog(t, cue(22) + 2.0, cue(22) + 2.6);
+            const e0 = KNOT[KN - 1], end0 = [bx + shakeB + (e0[0] * Math.cos(spin) - e0[1] * Math.sin(spin)) * br, by + (e0[0] * Math.sin(spin) + e0[1] * Math.cos(spin)) * br];
+            if (grab > 0) strokeOn(g, [un > 0 ? [lerp(end0[0], 560, un), lerp(end0[1], 380, un)] : end0, hand], grab, PAL.ink, 7);
+          } else {
+            // the straight thread drops and thickens into the 60% segment of the bar
+            const a = [lerp(560, R0 + 4, drop), lerp(380, GY + 32, drop)], b = [lerp(hand[0], R1 - 4, drop), lerp(hand[1], GY + 32, drop)];
+            if (bar < 1) band(g, a, b, lerp(7, 64, drop), drop > .55 ? PAL.red : PAL.ink);
+          }
+          tag(g, 'CLARITY', 960, 405, prog(t, cue(24) + .1, cue(24) + .5) * (1 - prog(t, cue(24) + 1.2, cue(24) + 1.5)), { size: 44, bg: PAL.red });
+          heads.forEach((h, i) => badge(g, h[0], h[1] - 100, prog(t, cue(24) + 2.1 + i * .1, cue(24) + 2.6 + i * .1), 'tick', PAL.red, PAL.cream, 22));
         });
         const hA = (a, b) => 1 - prog(t, a, b);
         fadeAlpha(g, hA(cue(22) - .3, cue(22)), () => {
@@ -420,8 +552,7 @@ function buildScenes() {
           subline(g, 'can they decide what they need', 140, 292, prog(t, cue(22) + 1.4, cue(22) + 1.9), 0, { size: 40 });
         });
         headline(g, 'THIS IS WHY SALES EXISTS', 140, 220, prog(t, cue(23) + .1, cue(23) + 1.1), { size: 80, red: [3] });
-        subline(g, 'Clarity for the confused. Help to decide.', 140, 292, prog(t, cue(24) + .8, cue(24) + 1.3), 0, { size: 40 });
-        miniBar(g, 2, prog(t, cue(24) + 2.0, cue(24) + 2.6), 'SALES');
+        subline(g, 'Clarity. Help to decide.', 140, 292, prog(t, cue(24) + .6, cue(24) + 1.1), 0, { size: 40 });
       } },
   ];
 
@@ -430,7 +561,7 @@ function buildScenes() {
     { t: cue(3) - .3, title: 'Cue 2: the bar splits 20 | 20 | 60' },
     { t: cue(4) - .5, title: 'Cue 3: first 20% = Never Buy' },
     { t: cue(5) - .4, title: 'Cue 4: why are they here?' },
-    { t: cue(7) - .5, title: 'Cues 5-6: no need, can\'t pay, won\'t buy' },
+    { t: cue(7) - .5, title: 'Cues 5-6: no need, empty wallet, pitches bounce off' },
     { t: cue(8) - .8, title: 'Cue 7: sales not needed' },
     { t: cue(9) - .3, title: 'Cue 8: 20% Definitely Buy' },
     { t: cue(12) - .3, title: 'Cues 9-11: like an Amazon buyer' },
@@ -446,6 +577,24 @@ function buildScenes() {
     { t: cue(25) - .3, title: 'Cues 23-24: why sales exists' },
   ];
   MUSIC.accents = [cue(2), cue(3), cue(8), cue(12), cue(17), cue(23), cue(24)];
-  SFX_CUES = [];
+  const P0 = cue(23) + .5;
+  SFX_CUES = [
+    { t: cue(2), type: 'draw' }, { t: cue(2) + .7, type: 'thud' }, { t: cue(3), type: 'pop' },
+    ...[cue(4), cue(8), cue(13), cue(17), cue(21)].map(x => ({ t: x - TR, type: 'whoosh' })),
+    { t: cue(4) + 1.4, type: 'pop' }, { t: cue(4) + 1.7, type: 'pop' }, { t: cue(5) + 1.3, type: 'pop' },
+    ...[0, 1, 2].flatMap(k => [{ t: cue(6) + 1.4 + k, type: 'pop' }, { t: cue(6) + 1.9 + k, type: 'thud' }]),
+    { t: cue(7) + .5, type: 'thud' },
+    { t: cue(9) + .2, type: 'pop' }, { t: cue(10) + .1, type: 'pop' }, { t: cue(10) + .7, type: 'draw' },
+    ...[cue(10) + 1.6, cue(10) + 3.0, cue(11) + .1, cue(11) + 1.1, cue(11) + 2.4, cue(11) + 3.6].map(x => ({ t: x + .35, type: 'click' })),
+    { t: cue(12) + .1, type: 'pop' }, { t: cue(12) + .6, type: 'whoosh' }, { t: cue(12) + 1.3, type: 'chime' }, { t: cue(12) + 2.6, type: 'pop' },
+    { t: cue(13) + .2, type: 'whoosh' }, ...[cue(13) + 1.3, cue(13) + 2.8, cue(14) + .4].map(x => ({ t: x + .35, type: 'click' })),
+    { t: cue(14) + 3.6, type: 'pop' }, { t: cue(14) + 4.0, type: 'whoosh' },
+    { t: cue(15) + .2, type: 'draw' }, { t: cue(15) + 1.8, type: 'draw' },
+    { t: cue(16) + .2, type: 'pop' }, { t: cue(16) + 1.2, type: 'pop' }, { t: cue(16) + 2.6, type: 'click' }, { t: cue(16) + 3.0, type: 'chime' },
+    ...[cue(18) + .1, cue(18) + 2.6, cue(19) + .1, cue(20) + .1, cue(20) + 2.1].map(x => ({ t: x, type: 'pop' })),
+    { t: cue(21) - .9, type: 'whoosh' }, { t: cue(21) + .1, type: 'draw' }, { t: cue(22) + 2.0, type: 'click' },
+    { t: P0 + .5, type: 'thud' }, { t: P0 + 1.2, type: 'thud' }, { t: cue(24) + .1, type: 'chime' },
+    { t: cue(24) + 1.3, type: 'whoosh' }, { t: cue(24) + 1.9, type: 'thud' }, { t: cue(24) + 2.1, type: 'pop' },
+  ];
   CUES = SRT_TEXT.map((text, i) => ({ start: C[i], end: C[i + 1], text }));
 }

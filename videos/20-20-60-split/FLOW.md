@@ -14,7 +14,7 @@ Script: 20-20-60.srt (24 cues, Tanglish)
 - Duration: 103.686 s          (= end of SRT cue 24, not the kit's 90 s default)
 - Format: Horizontal 16:9, 1920 × 1080, 30 fps
 - Background music: Enabled    (accents on cues 2, 3, 8, 12, 17, 23, 24)
-- Sound effects: Disabled
+- Sound effects: Enabled (46 cue-locked SFX: pops, clicks, whooshes, thuds, chimes)
 - Final video: MP4
 ```
 
@@ -103,7 +103,7 @@ Shape overlaps (bag over face, ticks on hats, window cut off by the camera) were
 
 ```bash
 python tools/srt_sync.py videos/20-20-60-split/20-20-60.srt videos/20-20-60-split/scenes.js
-python .claude/skills/gen-stickman-v2/assets/build.py --scenes videos/20-20-60-split/scenes.js --out videos/20-20-60-split/the-20-20-60-split.html --title "The 20-20-60 Split" --file-name the-20-20-60-split --duration 103.686 --mode storyboard --music on --sfx off --subtitles off
+python .claude/skills/gen-stickman-v2/assets/build.py --scenes videos/20-20-60-split/scenes.js --out videos/20-20-60-split/the-20-20-60-split.html --title "The 20-20-60 Split" --file-name the-20-20-60-split --duration 103.686 --mode storyboard --music on --sfx on --subtitles off
 ```
 
 After **APPROVED**: rebuild with `--mode player`, QA the transition and morph midpoints, test the export once, and publish with `capabilities: {downloads: true}`.

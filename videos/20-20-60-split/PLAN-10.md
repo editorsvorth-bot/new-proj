@@ -88,3 +88,49 @@ Every frame is scored by a first-time viewer watching **muted, without knowing T
 1. Phase A (A1–A11): the storyboard frames change, so republish the storyboard for approval.
 2. Phase B (B1–B15): mostly motion and transitions. This is built in the player build (Stage 2), after APPROVED.
 3. Phase C on the player build, then the export test and the final publish with MP4 download.
+
+## 6. Status (Storyboard v4)
+
+Done:
+- **User fixes:** pockets removed (an empty wallet now carries "can't pay"); one shared scale per scene, so SALES is
+  never taller than the others; the ending is rebuilt (a ball of thread unwinds as SALES pulls, with two tugs, then
+  the straight thread drops and becomes the 60% segment of the bar).
+- **Phase A:**
+  - A1 walk-in natures;
+  - A2 look-around;
+  - A3 cart crossed out;
+  - A4 nods and one-word rows;
+  - A5 the AMAZON window morphs into OUR WEBSITE;
+  - A6 LEAD ticket handed over;
+  - A7 FEATURES scroll waved off;
+  - A8 question pictures;
+  - A9 the decided group stands on the 60% bar.
+- **Phase B:**
+  - B1 the bar cracks into 3;
+  - B3 stamp X;
+  - B5 product flies into the hand, then the bag;
+  - B6 window morph;
+  - B7 handshake;
+  - B9 questions collapse into the next scene;
+  - B11 tug;
+  - B12 bar callback;
+  - B13 blinks, nods and pacing;
+  - B15 46 SFX cues on the SRT clock.
+- **Phase C gates:**
+  - every scene fully open on its cue (6/6);
+  - at most 12 words on screen (403/403 frames);
+  - no text overlap, no text under 24 px, no text past the 40 px margin (except 3 intended single-frame pop-ins);
+  - longest still span 1.25 s (limit 1.5 s).
+
+Not done (needs a decision or real-time review): B2/B4/B8 object-grown transitions (circle opens and wipes remain),
+B13 tie swing, and the A12 subtitles option.
+
+Commands for the gates:
+
+```bash
+node tools/frame_audit.js videos/20-20-60-split/the-20-20-60-split.html 0.25
+```
+
+```bash
+node tools/still_audit.js videos/20-20-60-split/the-20-20-60-split.html
+```

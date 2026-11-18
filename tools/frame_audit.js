@@ -3,16 +3,17 @@
    - text over a stick figure (glyph box intersects a figure's body box)
    - text too small to read in the export (rendered cap size < MIN_PX at 1080p)
    - text outside the safe area (MARGIN px from each edge)
+   - more than MAX_WORDS words on screen at once
    Frames inside a scene's enter transition are skipped (two scenes are mid-swap by design).
    Usage: node tools/frame_audit.js <page.html> [step=0.25] [out.json]                                  */
 const { chromium } = require('playwright');
 const [file, stepArg, outFile] = process.argv.slice(2);
-const STEP = +(stepArg || 0.25), MIN_PX = 24, MARGIN = 40, ALPHA = 0.35;
+const STEP = +(stepArg || 0.25), MIN_PX = 24, MARGIN = 40, ALPHA = 0.35, MAX_WORDS = 12;
 (async () => {
   const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 1280, height: 800 } });
   const errs = []; p.on('pageerror', e => errs.push(e.message));
   await p.goto('file://' + require('path').resolve(file)); await p.waitForTimeout(1500);
-  const res = await p.evaluate(({ STEP, MIN_PX, MARGIN, ALPHA }) => {
+  const res = await p.evaluate(({ STEP, MIN_PX, MARGIN, ALPHA, MAX_WORDS }) => {
     const W = CONFIG.width, H = CONFIG.height, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
     const g = cv.getContext('2d'); let rec = null;
     const tbox = (ctx, x0, y0, x1, y1) => { const m = ctx.getTransform(), pts = [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].map(([x, y]) => [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f]);
@@ -43,6 +44,8 @@ const STEP = +(stepArg || 0.25), MIN_PX = 24, MARGIN = 40, ALPHA = 0.35;
       if (SCENES.some(s => s.enter && t >= s.start && t < s.start + s.enter.dur)) continue;
       rec = { text: [], figs: [] }; renderAt(t, g); frames++;
       const T = rec.text;
+      const words = T.reduce((n, x) => n + x.s.split(/\s+/).filter(w => /[A-Za-z]/.test(w)).length, 0);
+      if (words > MAX_WORDS) add('tooManyWords', t, `${words} words on screen`);
       for (let i = 0; i < T.length; i++) {
         const a = T[i];
         if (a.em > 0 && a.em < MIN_PX) add('small', t, `"${a.s}" ${a.em.toFixed(0)}px`);
@@ -56,7 +59,7 @@ const STEP = +(stepArg || 0.25), MIN_PX = 24, MARGIN = 40, ALPHA = 0.35;
     const summary = {}; for (const k in issues) { const by = {}; issues[k].forEach(x => { (by[x.msg] = by[x.msg] || []).push(x.t); });
       summary[k] = Object.entries(by).map(([msg, ts]) => ({ msg, from: ts[0], to: ts.at(-1), frames: ts.length })); }
     return { frames, summary };
-  }, { STEP, MIN_PX, MARGIN, ALPHA });
+  }, { STEP, MIN_PX, MARGIN, ALPHA, MAX_WORDS });
   res.errors = errs;
   if (outFile) require('fs').writeFileSync(outFile, JSON.stringify(res, null, 1));
   const n = Object.values(res.summary).reduce((a, v) => a + v.length, 0);
