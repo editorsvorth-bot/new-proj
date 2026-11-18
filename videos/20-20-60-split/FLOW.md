@@ -9,11 +9,11 @@ Every scene opens fully on a cue start, and every reveal is written as `cue(n) +
 gen-stickman-v2
 Script: 20-20-60.srt (24 cues, Tanglish)
 - Storyboard: Enabled          (stop for APPROVED before Stage 2)
-- Voiceover: Disabled          (no audio file yet; timing comes from the SRT instead)
+- Voiceover: Enabled           (Sequence_02.mp3: 103.687 s decoded, ending exactly where the SRT ends, so the cues are already in sync)
 - Subtitles: Disabled          (CUES are already filled from the SRT; switch on with --subtitles on)
-- Duration: 103.686 s          (= end of SRT cue 24, not the kit's 90 s default)
+- Duration: the voiceover length (103.687 s decoded; the MP3 container reports 103.728 s with padding)
 - Format: Horizontal 16:9, 1920 × 1080, 30 fps
-- Background music: Enabled    (accents on cues 2, 3, 8, 12, 17, 23, 24)
+- Background music: Disabled   (the voiceover already carries a music bed: it never drops below about -24 dB)
 - Sound effects: Enabled (46 cue-locked SFX: pops, clicks, whooshes, thuds, chimes)
 - Final video: MP4
 ```
@@ -25,7 +25,7 @@ Script: 20-20-60.srt (24 cues, Tanglish)
 2. In `scenes.js`, `cue(n)` = start of cue n. Times are never typed as raw numbers.
 3. Scene k starts at `cue(first) − 0.7 s` with a 0.7 s iris or wipe, so it is **fully open on its cue**.
    The previous scene ends on that same cue.
-4. Build with `--duration 103.686` (the value `srt_sync.py` prints).
+4. Build with `--duration` set to the voiceover length (103.728), or the SRT end if there is no voiceover.
 
 ## 3. Idea units → on-screen words (Rule 1: script only)
 
@@ -103,7 +103,16 @@ Shape overlaps (bag over face, ticks on hats, window cut off by the camera) were
 
 ```bash
 python tools/srt_sync.py videos/20-20-60-split/20-20-60.srt videos/20-20-60-split/scenes.js
-python .claude/skills/gen-stickman-v2/assets/build.py --scenes videos/20-20-60-split/scenes.js --out videos/20-20-60-split/the-20-20-60-split.html --title "The 20-20-60 Split" --file-name the-20-20-60-split --duration 103.686 --mode storyboard --music on --sfx on --subtitles off
+python .claude/skills/gen-stickman-v2/assets/build.py --scenes videos/20-20-60-split/scenes.js --out videos/20-20-60-split/the-20-20-60-split.html --title "The 20-20-60 Split" --file-name the-20-20-60-split --duration 103.728 --mode player --music off --sfx on --voiceover on --subtitles off
 ```
 
-After **APPROVED**: rebuild with `--mode player`, QA the transition and morph midpoints, test the export once, and publish with `capabilities: {downloads: true}`.
+Final MP4 (frame-exact, headless; voiceover + SFX through the engine's own mix):
+
+```bash
+node tools/render_mp4.js videos/20-20-60-split/the-20-20-60-split.html <voiceover.mp3> videos/20-20-60-split/the-20-20-60-split.mp4
+```
+
+The ending (cues 21–24) is one continuous thread: it draws on as a coil, SALES takes the loose end, the loops come undone
+from his end (two small tugs), the straight thread is released, levels to the 60% width, sinks behind the group, and
+lands under their feet as the red 60% segment while the gray 20% segments slide in. A 30 fps frame-difference check
+over all 3111 frames finds no jumps (the two diagonal wipes were lengthened to 1.0 s for this).
