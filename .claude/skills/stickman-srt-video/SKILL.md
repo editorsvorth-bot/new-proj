@@ -1,6 +1,7 @@
 ---
 name: stickman-srt-video
-description: Master flow for turning a script plus its SRT (any language, including Tanglish talking-head scripts) and an optional voiceover into a premium flat-vector stickman explainer MP4 in the locked black / red / cream / gray palette, with every scene and reveal timed to the SRT (down to the spoken word), a storyboard approval stage where each board is approved or commented on separately, automated quality gates (timing, text overlap, readability, stillness, smoothness), a wow/understanding scoring rubric, and a frame-exact MP4 render with the voiceover. Use when the user wants "the same kind of video" as the 20-20-60 stickman explainer for a new script, gives an SRT or voiceover for a stickman explainer, or asks for the stickman master flow. Builds on the gen-stickman-v2 engine (bundled). Content comes only from the script; every asset is drawn or synthesised in code.
+description: Master flow for turning a script plus its SRT (any language, including Tanglish talking-head scripts) and an optional voiceover into a premium flat-vector stickman explainer MP4 in the locked black / red / cream / gray palette, with every scene and reveal timed to the SRT (down to the spoken word), a storyboard approval stage where each board is approved or commented on separately, automated quality gates (timing, text overlap, readability, stillness, smoothness), a wow/understanding scoring rubric, and a frame-exact MP4 render with the voiceover. Use when the user wants "the same kind of video" as the 20-20-60 stickman explainer for a new script, gives an SRT or voiceover for a stickman explainer, or asks for the stickman master flow. Builds on the gen-stickman-v2 engine (bundled). Content comes only from the script; every asset is drawn or synthesised in code. Runs one stage at a time with a stage report after each.
+version: 1.2.0
 ---
 
 # stickman-srt-video: script + SRT → approved storyboard → final MP4
@@ -52,6 +53,45 @@ Script: <text or file>            SRT: <file>  (required: it is the clock)
 
 Full instructions, commands and checklists for each stage: **`references/master-flow.md`** (read it first).
 
+## Run it step by step (how to operate this skill)
+
+1. **Start:** read `references/master-flow.md`. If a task-list tool is available, create one task per stage (0–8).
+   Tell the user in one short paragraph: the 9 stages, the two places you will stop for them (storyboard approval and
+   final delivery), and roughly how long each takes. Create `V/STATUS.md` from the template below.
+2. **One stage at a time.** Open each stage with one line: `Stage N/8 · <name>: <what I am doing now>`. Do only that
+   stage's work, run its gate, then update `V/STATUS.md` and post the **stage report**:
+   ```
+   Stage N/8 · <name>: done
+   Made: <files/links>
+   Checks: <gate> PASS/FAIL (<numbers>), ...
+   Next: Stage N+1 · <name>
+   ```
+3. **Never skip or merge past a stop.** A failed gate is fixed and re-run before the next stage (say what failed and
+   what you changed). Stages 4 and 8 end the turn and wait for the user; between them, continue on your own.
+4. **Stage 4 (storyboard approval):** give the review link and the steps for the user (open it, Approve / Needs
+   changes per board, comment, then reply "reviewed" or APPROVED). When they reply, read `reviews`, post a table of
+   board → decision → comment, revise only the flagged boards, republish, and stop again until every board is approved.
+5. **Stage 8 (delivery):** always include the scorecard table (per scene, overall, change, why not 10, muted test),
+   the MP4, what each gate found, and the cost. Ask what to change, by scene or by time.
+6. **Change requests after delivery** go back to Stage 5 for the named scenes only, then 6 → 7 → 8 (score again; the
+   scorecard shows the change). Storyboard-level changes go back to Stage 3 → 4.
+7. **Resuming in a new session:** read `V/STATUS.md`, `V/FLOW.md`, `V/SCORES.json` and the review store, say which
+   stage you are resuming from, and continue there.
+
+`V/STATUS.md` template:
+```
+# <Video title>: status
+Current stage: N/8 · <name>          Review page: <url or ->          Last MP4: <path or ->
+| Stage | State | Made | Checks |
+|---|---|---|---|
+| 0 Intake | done / in progress / waiting for user / not started | ... | ... |
+...
+| 8 Deliver | ... | ... | ... |
+```
+
+A plain-language guide for the person using the skill is in **`GUIDE.md`**: point users to it when they ask how to
+use the skill.
+
 ## Files
 
 | Path | What it is |
@@ -61,6 +101,7 @@ Full instructions, commands and checklists for each stage: **`references/master-
 | `assets/scenes-template.js` | The only file written per video: SRT block, config, scenes, STORYBOARD, SFX |
 | `assets/build_video.py` | kit + scenes → page; `--mode review` adds the approval panel (`assets/review/review.js`) |
 | `scripts/` | `srt_sync.py`, `timing_check.js`, `frame_audit.js`, `still_audit.js`, `smooth_check.js`, `qa_sheet.js`, `render_mp4.js`, `audio_probe.py`, `scorecard.py` (wow/understanding after every video, with history), `cost_report.py` |
+| `GUIDE.md` | Step-by-step guide for the person using the skill (install, prepare files, start, approve, receive, change) |
 | `references/` | `master-flow.md`, `rules.md`, `quality.md`, `motion-composition.md`, `gates.md`, `kit-api.md`, `storyboard-review.md`, `lessons.md` |
 | `examples/20-20-60-split/` | The finished reference video's scenes, flow and plan. Never reuse its story for another script. |
 

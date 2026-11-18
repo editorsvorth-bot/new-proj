@@ -4,6 +4,8 @@
 `NODE_PATH=$(npm root -g)` so the pre-installed Playwright resolves. All times are seconds on the SRT clock.
 
 ## Stage 0: Intake
+0. Create `V/STATUS.md` from the template in SKILL.md and update it at the end of every stage (it is how a new
+   session resumes).
 1. Put `<slug>.srt` (and the voiceover, if any) in `V/`. Ask only if the SRT is missing: it is the clock.
 2. Voiceover: `python SK/scripts/audio_probe.py duration <voice> V/<slug>.srt`. The decoded length should equal the
    SRT end (±50 ms; MP3 containers report ~40 ms of padding: ignore it). A bigger gap means the SRT was made from
