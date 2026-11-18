@@ -56,13 +56,17 @@ Script: 20-20-60.srt (24 cues, Tanglish)
 | 23 | 1:36.2 | Ivangalukkaaga dhaan sales … exist aagudhu | This is why sales exists | **THIS IS WHY SALES EXISTS** |
 | 24 | 1:39.5 | confusion-la irukkavangalukku clarity kodutthu, decision making-la help | Clarity for the confused, help to decide | CLARITY · DECISION · *Clarity for the confused. Help to decide.* · SALES |
 
-"US" is the script's *namma* (we/us). No number, fact, example or analogy appears that the script doesn't state.
+The salesperson is the script's *namma* (we/us), labelled **SALES** (the script's own word). No number, fact, example or analogy appears that the script doesn't state.
 
 ## 4. Design
 
 - **Spine object:** one bar under ten buyers (1 figure = 10%), split 20 | 20 | 60. It opens the video, returns
   full-size at cue 17, and stays as a small corner reprise with the active group in red (ending with **SALES** on the 60%).
-- **Cast:** the group being talked about is a **red** hero; **US** is an ink figure with a pill label; inactive groups are **gray**.
+- **Cast:** the group being talked about is a **red** hero; inactive groups are **gray**.
+  - **SALES:** ink figure with a **red tie** and a SALES pill.
+  - **Never Buy:** pockets turned inside out ("can't pay"), arms crossed, turns their back when pitched ("won't buy").
+  - **Definitely Buy:** phone in hand with a ticked screen (researched online, arrives decided).
+  - **Confused:** paces on the spot, turns left/right, alternates head-scratch and shrug.
 - **Props (drawn in code):** a browser window (AMAZON, then OUR WEBSITE) with a ticking checklist, a FEATURES card
   that gets crossed out, and a tangle of confusion that straightens into an arrow.
 - **Faces carry the script's feelings:** confused on cue 4 and cues 17–22, sad when effort is wasted (cue 7), happy on purchase and clarity.
@@ -72,11 +76,11 @@ Script: 20-20-60.srt (24 cues, Tanglish)
 | Scene | Opens (fully) → ends | Cues | Composition | Beats (all on the cue named) | Transition in |
 |---|---|---|---|---|---|
 | 1 split | 0:00.0 → 0:10.5 | 1–3 | Row of 10 buyers on the spine bar | c1 walk in + gray line · c2 bar grows, 20/20/60, headline · c3 first 2 turn red, others gray, camera pushes left | — |
-| 2 never | 0:10.5 → 0:26.4 | 4–7 | Red buyer vs US, two-shot | c4 both shrug + red ? · c5 buyer "stop" palm · c6 US walks in, 3 red pitch arrows die out, buyer crosses arms · c7 US slumps (sad), big red X | iris from the red pair |
+| 2 never | 0:10.5 → 0:26.4 | 4–7 | Red buyer vs US, two-shot | c4 both shrug + red ? · c5 buyer "stop" palm · c6 SALES walks in offering; 3 product bubbles bounce off the raised palm and drop gray; buyer turns away, arms crossed · c7 US slumps (sad), big red X | iris from the red pair |
 | 3 definite | 0:26.4 → 0:48.0 | 8–12 | Hero beside an AMAZON window | c8 hero walks in, corner bar (middle red) · c9 window pops · c10 DECIDE, SEE THE PRODUCT tick · c11 SEARCH, DESCRIPTION, DETAILS, FEATURES tick · c12 PURCHASE button, hero cheers | wipe |
 | 4 lead | 0:48.0 → 1:08.5 | 13–16 | Our website → hero walks to US | c13 window ABOUT US, WHAT WE SELL tick · c14 DECIDED ON US, walk to US, LEAD tag · c15 FEATURES card crossed out · c16 WHAT IT IS / HOW MUCH bubbles, hero cheers, tick, DEFINITELY BUY | iris from the purchase button |
 | 5 confused | 1:08.5 → 1:25.8 | 17–20 | Spine bar returns; 60% lit red | c17 six figures turn red + confused · c18 2 question bubbles · c19 1 bubble · c20 2 bubbles | wipe |
-| 6 clarity | 1:25.8 → 1:43.7 | 21–24 | Six confused figures, a tangle overhead | c21 tangle draws on · c22 US walks in, reaches · c23 headline, tangle straightens into an arrow · c24 CLARITY, figures happy, DECISION, corner bar 60% = SALES, hold | iris from the bubbles |
+| 6 clarity | 1:25.8 → 1:43.7 | 21–24 | Six confused figures, a tangle overhead | c21 tangle draws on · c22 SALES walks in, grabs the loose end · c23 headline, SALES pulls the tangle into a straight thread · c24 CLARITY on the thread, figures calm, a tick over each head, corner bar 60% = SALES, hold | iris from the bubbles |
 
 ## 6. Checks run (storyboard build)
 

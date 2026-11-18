@@ -469,6 +469,60 @@ function featureCard(g, x, y, p, crossP) {
   });
   crossMark(g, x + 170, y + 120, 120, crossP, 20);
 }
+/* ---------------- character kits: each group acts like the script describes it ---------------- */
+function neckOf(F, r) { const P = F.pose || POSES.stand, L = rad(P.lean || 0), fac = F.facing || 1, hd = (RIG.neck + RIG.head) * (F.s || 1);
+  return [r.head[0] - Math.sin(L) * hd * fac, r.head[1] + Math.cos(L) * hd]; }
+/** SALES: ink figure with a red tie (knot + blade follow the torso). */
+function salesman(g, F) {
+  const r = drawStickman(g, Object.assign({ color: PAL.ink }, F)); if ((F.draw ?? 1) < .6) return r;
+  const s = F.s || 1, n = neckOf(F, r), h = r.hip, L = Math.hypot(h[0] - n[0], h[1] - n[1]) || 1, ux = (h[0] - n[0]) / L, uy = (h[1] - n[1]) / L, px = -uy, py = ux;
+  const P = (a, b) => [n[0] + ux * a * s + px * b * s, n[1] + uy * a * s + py * b * s];
+  g.save(); g.globalAlpha *= F.alpha ?? 1;
+  fillPoly(g, [P(8, -8), P(8, 8), P(20, 7), P(20, -7)], PAL.red);
+  fillPoly(g, [P(20, -6), P(20, 6), P(64, 12), P(80, 0), P(64, -12)], PAL.red);
+  g.restore(); return r;
+}
+/** NEVER BUY: pockets turned inside out ("can't pay"), popping in with pk 0..1. */
+function neverBuyer(g, F, pk = 1) {
+  const r = drawStickman(g, F); if (pk <= 0) return r;
+  const s = (F.s || 1) * 1.35, q = E.back(clamp(pk));
+  [-1, 1].forEach((d, i) => {
+    const x = r.hip[0] + d * 22 * s, y = r.hip[1] + 6 * s, sw = Math.sin((F.t || 0) * 3 + i) * .12;
+    g.save(); g.translate(x, y); g.rotate(sw + d * .15); g.scale(q, q);
+    fillPoly(g, rrectPoly(-12 * s, 0, 24 * s, 30 * s, 9 * s), PAL.cream);
+    tracePoly(g, rrectPoly(-12 * s, 0, 24 * s, 30 * s, 9 * s)); g.lineWidth = 4 * s; g.strokeStyle = PAL.ink; g.stroke();
+    g.restore();
+  });
+  return r;
+}
+/** DEFINITELY BUY: phone in hand with a ticked screen (already researched, already decided). */
+function sureBuyer(g, F, ph = 1) {
+  const r = drawStickman(g, F); if (ph <= 0) return r;
+  const s = F.s || 1, q = E.back(clamp(ph)), [hx, hy] = r.handF;
+  popAt(g, hx, hy - 18 * s, q, () => {
+    fillPoly(g, rrectPoly(hx - 17 * s, hy - 48 * s, 34 * s, 58 * s, 8 * s), PAL.ink);
+    fillPoly(g, rrectPoly(hx - 12 * s, hy - 42 * s, 24 * s, 42 * s, 4 * s), PAL.cream);
+    strokeOn(g, [[hx - 7 * s, hy - 22 * s], [hx - 2 * s, hy - 16 * s], [hx + 7 * s, hy - 29 * s]], prog(ph, .4, 1), PAL.red, 4 * s);
+  });
+  return r;
+}
+/** CONFUSED: pacing on the spot, turning left/right, alternating head-scratch and shrug. Returns {x, facing, pose}. */
+function pacing(x0, t, i, on = 1) {
+  const ph = t * 1.4 + i * 1.7, x = x0 + Math.sin(ph) * 18 * on, facing = Math.cos(ph) >= 0 ? 1 : -1;
+  const alt = .5 + .5 * Math.sin(t * 1.1 + i * 2.3);
+  return { x, facing, pose: poseMix(POSES.stand, poseMix(POSES.shrug, POSES.think, alt), on) };
+}
+/** A pitch: a speech bubble carrying a product (box with a red band). */
+function pitchBubble(g, x, y, s, col, a = 1) {
+  if (a <= 0) return;
+  fadeAlpha(g, a, () => {
+    g.beginPath(); g.arc(x, y, 38 * s, 0, 7); g.fillStyle = PAL.cream; g.fill(); g.lineWidth = 5; g.strokeStyle = col; g.stroke();
+    fillPoly(g, rrectPoly(x - 17 * s, y - 14 * s, 34 * s, 28 * s, 5 * s), col === PAL.gray ? PAL.gray : PAL.ink);
+    fillPoly(g, rrectPoly(x - 4 * s, y - 14 * s, 8 * s, 28 * s, 2), col === PAL.gray ? rgba(PAL.cream, .7) : PAL.red);
+  });
+}
+function linePts2(x0, y0, x1, y1) { const o = []; for (let i = 0; i < KN; i++) o.push([lerp(x0, x1, i / (KN - 1)), lerp(y0, y1, i / (KN - 1))]); return o; }
+
 /** Deterministic tangle (a knot of confusion) with N points; untangles into a straight arrow shaft. */
 const KN = 240;
 function knotPts(cx, cy, r) {
@@ -499,7 +553,8 @@ function buildScenes() {
             const g0 = i < 2, rest = g0 ? poseMix(POSES.stand, POSES.cross, E.inOut(prog(t, cue(3) + .4, cue(3) + 1.0))) : POSES.stand;
             const w = walker(kf, t, .75, rest, 1);
             const colr = g0 ? (red0 > .5 ? PAL.red : PAL.ink) : rgba(PAL.ink, 1 - .55 * red0);
-            drawStickman(g, { x: w.x, y: GY, s: .75, pose: idle(w.pose, t, i), facing: w.facing, color: colr, expr: 'neutral' });
+            const F = { x: w.x, y: GY, s: .75, pose: idle(w.pose, t, i), facing: w.facing, color: colr, expr: 'neutral', t };
+            if (g0) neverBuyer(g, F, prog(t, cue(3) + 1.2, cue(3) + 1.7)); else drawStickman(g, F);
           }
         });
         subline(g, 'Let me explain it with a diagram', 960, 210, prog(t, .3, .9), prog(t, cue(2) - .3, cue(2)), { align: 'center', size: 44, color: PAL.gray, face: 'label' });
@@ -518,26 +573,34 @@ function buildScenes() {
           // hero: a Never Buy buyer (red)
           let hp = POSES.stand;
           hp = poseMix(hp, POSES.shrug, E.inOut(prog(t, cue(4) + .1, cue(4) + .6)));
-          hp = poseMix(hp, POSES.stop, E.inOut(prog(t, cue(5), cue(5) + .5)));
-          hp = poseMix(hp, POSES.cross, E.inOut(prog(t, cue(6) + .6, cue(6) + 1.1)));
-          const hexpr = t < cue(5) ? 'confused' : 'neutral';
-          const hr = drawStickman(g, { x: hx, y: GY, s: 1.15, pose: idle(hp, t, 1), facing: 1, color: PAL.red, expr: hexpr });
+          hp = poseMix(hp, POSES.stop, E.inOut(prog(t, cue(5), cue(5) + .5)));            // "no need"
+          hp = poseMix(hp, POSES.shrug, E.inOut(prog(t, cue(5) + 1.3, cue(5) + 1.8)));     // "can't pay": pockets out
+          hp = poseMix(hp, POSES.stop, E.inOut(prog(t, cue(6) + 1.0, cue(6) + 1.4)));      // palm up to the pitch
+          hp = poseMix(hp, POSES.cross, E.inOut(prog(t, cue(6) + 3.7, cue(6) + 4.2)));     // turns away, arms crossed
+          const hexpr = t < cue(5) ? 'confused' : (t > cue(6) + 1.0 ? 'angry' : 'neutral');
+          const hface = t > cue(6) + 3.8 ? -1 : 1;
+          const hr = neverBuyer(g, { x: hx, y: GY, s: 1.15, pose: idle(hp, t, 1), facing: hface, color: PAL.red, expr: hexpr, t }, prog(t, cue(5) + 1.3, cue(5) + 1.9));
           // us (ink): a salesperson, labelled US
-          const uw = walker(usKf, t, 1.15, POSES.point, -1);
+          const uw = walker(usKf, t, 1.15, POSES.reach, -1);
           let up = t < cue(6) ? poseMix(POSES.stand, POSES.shrug, E.inOut(prog(t, cue(4) + .5, cue(4) + 1.0))) : uw.pose;
           up = poseMix(up, POSES.slump, E.inOut(prog(t, cue(7) + .1, cue(7) + .7)));
           const ux = t < cue(6) ? 1420 : uw.x;
-          const ur = drawStickman(g, { x: ux, y: GY, s: 1.15, pose: idle(up, t, 2), facing: -1, color: PAL.ink, expr: t > cue(7) ? 'sad' : (t < cue(5) ? 'confused' : 'neutral') });
-          tag(g, 'US', ux, GY + 70, prog(t, cue(4) + .4, cue(4) + .8), { size: 30 });
+          const ur = salesman(g, { x: ux, y: GY, s: 1.15, pose: idle(up, t, 2), facing: -1, expr: t > cue(7) ? 'sad' : (t < cue(5) ? 'confused' : 'happy') });
+          tag(g, 'SALES', ux, GY + 70, prog(t, cue(4) + .4, cue(4) + .8), { size: 30 });
           tag(g, 'NEVER BUY', hx, GY + 70, prog(t, cue(4) + .2, cue(4) + .6), { size: 30, bg: PAL.red });
           // cue 4: "?" for both of them
           const qOut = 1 - prog(t, cue(5) - .3, cue(5));
           [[hr, 1, cue(4) + .2], [ur, -1, cue(4) + .9]].forEach(([r, d, a]) => thoughtBubble(g, r.head[0] + 40 * d, r.head[1] - 40, r.head[0] + 150 * d, r.head[1] - 150, 64, prog(t, a, a + 1.0) * qOut, (g2, rr, q) => {
             g2.globalAlpha *= q; g2.font = font('head', 84); g2.fillStyle = PAL.red; g2.textAlign = 'center'; g2.textBaseline = 'middle'; g2.fillText('?', 0, 6); }));
-          // cue 6: our pitch goes in, nothing comes back
+          // cue 6: product pitches fly from the salesman's hand, bounce off the raised palm and drop, going gray
           for (let k = 0; k < 3; k++) {
-            const a = cue(6) + 1.3 + k * 1.1, p = prog(t, a, a + .5), fade = 1 - prog(t, a + .7, a + 1.0);
-            if (p > 0 && fade > 0) fadeAlpha(g, fade, () => arrowOn(g, ux - 110, 560 + k * 40, hx + 120, 560 + k * 40, p, PAL.red, 8, .08 * (k - 1)));
+            const a = cue(6) + 1.4 + k * 1.0, fly = prog(t, a, a + .5), fall = prog(t, a + .5, a + 1.3);
+            if (fly <= 0 || fall >= 1) continue;
+            const sx = ur.handF[0] - 30, sy = ur.handF[1] - 20, hitX = hx + 110, hitY = 500 + k * 25;
+            let x, y, col = PAL.ink;
+            if (fall <= 0) { x = lerp(sx, hitX, E.out(fly)); y = lerp(sy, hitY, E.out(fly)) - Math.sin(Math.PI * fly) * 40; }
+            else { x = hitX + 90 * fall; y = hitY + (GY - 40 - hitY) * fall * fall - Math.sin(Math.PI * fall) * 60; col = PAL.gray; }
+            pitchBubble(g, x, y, 1.4, col, 1 - prog(fall, .75, 1));
           }
           crossMark(g, (hx + 1060) / 2, 590, 90, prog(t, cue(7) + .5, cue(7) + 1.1));
         });
@@ -606,13 +669,14 @@ function buildScenes() {
           const w = walker([[cue(14) + 1.6, 860], [cue(14) + 3.8, 1180, E.out]], t, 1.1, POSES.stand, 1);
           let pose = poseMix(w.pose, POSES.think, E.inOut(prog(t, cue(13) + .4, cue(13) + .9)) * (1 - prog(t, cue(14) + 1.0, cue(14) + 1.5)));
           pose = poseMix(pose, POSES.cheer, E.inOut(prog(t, cue(16) + 2.6, cue(16) + 3.1)));
-          const hr = drawStickman(g, { x: w.x, y: GY, s: 1.1, pose: idle(pose, t, 4), facing: t < cue(14) + 1.2 ? -1 : 1, color: PAL.red, expr: t > cue(14) + .9 ? 'happy' : 'neutral' });
+          const hr = sureBuyer(g, { x: w.x, y: GY, s: 1.1, pose: idle(pose, t, 4), facing: t < cue(14) + 1.2 ? -1 : 1, color: PAL.red, expr: t > cue(14) + .9 ? 'happy' : 'neutral' },
+            prog(t, cue(14) + 1.0, cue(14) + 1.6) * (1 - prog(t, cue(16) + 2.4, cue(16) + 2.6)));
           tag(g, 'LEAD', w.x, hr.head[1] - 110, prog(t, cue(14) + 3.6, cue(14) + 4.1) * (1 - prog(t, cue(16) - .3, cue(16))), { bg: PAL.red, size: 40 });
           // us
           let up = poseMix(POSES.stand, POSES.stop, E.inOut(prog(t, cue(15) + .2, cue(15) + .7)));
           up = poseMix(up, POSES.point, E.inOut(prog(t, cue(16), cue(16) + .5)));
-          const ur = drawStickman(g, { x: 1560, y: GY, s: 1.1, pose: idle(up, t, 5), facing: -1, color: PAL.ink, expr: t > cue(16) + 2.6 ? 'happy' : 'neutral' });
-          tag(g, 'US', 1560, GY + 70, prog(t, cue(13) + .3, cue(13) + .7), { size: 30 });
+          const ur = salesman(g, { x: 1560, y: GY, s: 1.1, pose: idle(up, t, 5), facing: -1, expr: t > cue(16) + 2.6 ? 'happy' : 'neutral' });
+          tag(g, 'SALES', 1560, GY + 70, prog(t, cue(13) + .3, cue(13) + .7), { size: 30 });
           featureCard(g, 220, 440, prog(t, cue(15) + .2, cue(15) + .7) * (1 - prog(t, cue(16) - .3, cue(16))), prog(t, cue(15) + 2.0, cue(15) + 2.8));
           speechBubble(g, 'WHAT IT IS', 1500, 320, ur.head[0] - 30, ur.head[1] - 20, prog(t, cue(16) + .2, cue(16) + .6), { size: 34 });
           speechBubble(g, 'HOW MUCH', 1250, 410, ur.head[0] - 60, ur.head[1] - 30, prog(t, cue(16) + 1.4, cue(16) + 1.8), { size: 34 });
@@ -642,10 +706,11 @@ function buildScenes() {
           spineBar(g, 1, [rgba(PAL.gray, .9), rgba(PAL.gray, .9), r6 > .5 ? PAL.red : PAL.ink], 1, [1, 1, prog(t, cue(17) + .3, cue(17) + 1.0)]);
           const heads = [];
           for (let i = 0; i < 10; i++) {
-            const conf = i >= 4, base = [POSES.shrug, POSES.think][i % 2];
-            const pose = conf ? poseMix(POSES.stand, base, E.inOut(prog(t, cue(17) + .4 + (i - 4) * .1, cue(17) + 1.0 + (i - 4) * .1))) : POSES.stand;
-            const r = drawStickman(g, { x: SLOT(i), y: GY, s: .75, pose: idle(pose, t, i), facing: i % 2 ? -1 : 1,
-              color: conf ? (r6 > .5 ? PAL.red : PAL.ink) : rgba(PAL.gray, .9), expr: conf && t > cue(17) + .5 ? 'confused' : 'neutral' });
+            const conf = i >= 4, on = conf ? E.inOut(prog(t, cue(17) + .4 + (i - 4) * .1, cue(17) + 1.0 + (i - 4) * .1)) : 0;
+            const pc = pacing(SLOT(i), t, i, on);
+            const F = { x: conf ? pc.x : SLOT(i), y: GY, s: .75, pose: idle(conf ? pc.pose : (i < 2 ? POSES.cross : POSES.stand), t, i), facing: conf ? pc.facing : 1,
+              color: conf ? (r6 > .5 ? PAL.red : PAL.ink) : rgba(PAL.gray, .9), expr: conf && t > cue(17) + .5 ? 'confused' : 'neutral', t };
+            const r = conf ? drawStickman(g, F) : (i < 2 ? neverBuyer(g, F, 1) : sureBuyer(g, F, 1));
             heads.push(r.head);
           }
           const Q = [['Do I need it?', 760, 470, 4, cue(18) + .1], ['Buy it from whom?', 1180, 360, 6, cue(18) + 2.6],
@@ -663,23 +728,29 @@ function buildScenes() {
         const un = E.inOut(prog(t, cue(23) + .4, cue(23) + 1.8)), clear = t > cue(24) + .4;
         world(g, c, () => {
           groundLine(g, GY, 1);
+          const heads = [];
           for (let i = 0; i < 6; i++) {
-            const base = [POSES.shrug, POSES.think][i % 2];
-            const pose = poseMix(base, i % 2 ? POSES.cheer : POSES.stand, E.inOut(prog(t, cue(24) + .4 + i * .08, cue(24) + 1.0 + i * .08)));
-            drawStickman(g, { x: 640 + i * 128, y: GY, s: .8, pose: idle(pose, t, i), facing: i < 3 ? 1 : -1, color: PAL.red, expr: clear ? 'happy' : 'confused' });
+            const calm = E.inOut(prog(t, cue(24) + .2 + i * .08, cue(24) + .8 + i * .08)), pc = pacing(640 + i * 128, t, i, 1 - calm);
+            const pose = poseMix(pc.pose, i % 2 ? POSES.cheer : POSES.stand, calm);
+            const r = drawStickman(g, { x: pc.x, y: GY, s: .8, pose: idle(pose, t, i), facing: calm > .5 ? 1 : pc.facing, color: PAL.red, expr: clear ? 'happy' : 'confused' });
+            heads.push(r.head);
           }
-          // the knot of confusions -> a straight line ending in an arrow head
-          const dp = prog(t, cue(21) + .1, cue(21) + 1.6);
-          const pts = KNOT.map((p, i) => mix(p, LINE[i], un));
+          // SALES arrives, grabs the loose end of the tangle and pulls it straight
+          const w = walker([[cue(22) + .2, 2100], [cue(22) + 2.0, 1600, E.out], [cue(23) + .4, 1600], [cue(23) + 1.8, 1680]], t, 1.15, POSES.reach, -1);
+          let up = poseMix(w.pose, POSES.reach, E.inOut(prog(t, cue(22) + 1.8, cue(22) + 2.3)));
+          up = poseMix(up, POSES.slump, .25 * Math.sin(Math.PI * prog(t, cue(23) + .4, cue(23) + 1.8)));   // leans into the pull
+          up = poseMix(up, POSES.point, E.inOut(prog(t, cue(24) + 1.6, cue(24) + 2.1)));
+          let hand = [1500, 560];
+          if (t > cue(22)) hand = salesman(g, { x: w.x, y: GY, s: 1.15, pose: idle(up, t, 7), facing: -1, expr: 'happy' }).handF;
+          tag(g, 'SALES', w.x, GY + 70, prog(t, cue(22) + 1.8, cue(22) + 2.2), { size: 30 });
+          const dp = prog(t, cue(21) + .1, cue(21) + 1.6), line = linePts2(520, 380, hand[0], hand[1]);
+          const pts = KNOT.map((p, i) => mix(p, line[i], un));
           if (dp > 0) strokeOn(g, pts, un > 0 ? 1 : dp, PAL.ink, 8);
-          if (un >= 1) { const hp = prog(t, cue(23) + 1.8, cue(23) + 2.2); strokeOn(g, [[1126, 400], [1160, 430], [1126, 460]], hp, PAL.ink, 8); }
-          // us: help arrives
-          const w = walker([[cue(22) + .2, 2100], [cue(22) + 2.0, 1620, E.out]], t, 1.15, POSES.reach, -1);
-          const up = poseMix(w.pose, POSES.point, E.inOut(prog(t, cue(23) + .2, cue(23) + .6)));
-          if (t > cue(22)) drawStickman(g, { x: w.x, y: GY, s: 1.15, pose: idle(up, t, 7), facing: -1, color: PAL.ink, expr: 'happy' });
-          tag(g, 'US', w.x, GY + 70, prog(t, cue(22) + 1.8, cue(22) + 2.2), { size: 30 });
-          tag(g, 'CLARITY', 960, 360, prog(t, cue(24) + .1, cue(24) + .6), { size: 44, bg: PAL.red });
-          tag(g, 'DECISION', 1330, 430, prog(t, cue(24) + 1.4, cue(24) + 1.9), { size: 36 });
+          const grab = prog(t, cue(22) + 2.0, cue(22) + 2.6) * (1 - un);
+          if (grab > 0) strokeOn(g, [KNOT[KN - 1], hand], grab, PAL.ink, 6);
+          const mid = line[Math.floor(KN / 2)];
+          tag(g, 'CLARITY', mid[0], mid[1] - 70, prog(t, cue(24) + .1, cue(24) + .6), { size: 44, bg: PAL.red });
+          heads.forEach((h, i) => badge(g, h[0], h[1] - 70, prog(t, cue(24) + 1.3 + i * .12, cue(24) + 1.8 + i * .12), 'tick', PAL.red, PAL.cream, 22));
         });
         const hA = (a, b) => 1 - prog(t, a, b);
         fadeAlpha(g, hA(cue(22) - .3, cue(22)), () => {
