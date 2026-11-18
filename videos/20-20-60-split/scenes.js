@@ -9,248 +9,14 @@ let SCENES = [], CUES = [], SFX_CUES = [], STORYBOARD = [];
 const C = [0.0, 2.4, 4.9, 10.5, 13.8, 16.8, 21.5, 26.4, 29.6, 35.0, 39.8, 44.8, 48.0, 52.5, 58.0, 63.2, 68.5, 73.4, 78.4, 81.5, 85.8, 90.6, 96.2, 99.5, 103.686];
 const SRT_TEXT = ["Idha konjam diagrammatic-ah explain panren.", "Idha 20-20-60 split-nu solluvaanga.", "Ippo oru category of people, adhaavadhu first 20 percentage of the people, Never Buy category-kulla varuvaanga.", "Ivanga yen inga irukkaanga-nu avangalukkum theriyaadhu, namakkum theriyaadhu.", "Ivangalukku need irukkaadhu, ivangalaala pay panna mudiyaadhu,", "and at the same time, ivangalukku namma idha evlo kashtappattu sell pannaalum, ivanga kandippaa vaanga maattaanga.", "So, ivangalukku namma efforts poduradhu-ndradhe waste of time. So, ivangalukku sales thevaiye kidaiyaadhu.", "And innoru 20 percentage of people, Definitely Buy.", "Ivanga eppadi-naa Amazon purchasers maadhiri. Ippo namma vandhu oru Amazon-la oru porul vaangurom appadinaa,", "ippo vaangurom—cart-la podrathu kidaiyaadhu—vaangurom appadinaa, oru porul venum-nu decide pannuvom, poi product-ah paappom,", "search pannuvom, description paappom, details nallaa irukkaa-nu paappom, features-laam nallaa irukkaa-nu paappom,", "paatthuttu nallaa irukkaa, purchase pannittu vandhutte iruppom.", "Adhe maadhiri dhaan ivangalum. Nammala patthi, namma website, namma enna sell panrom-ngradha patthi,", "and namma dhaan venum appadindra maadhiri ellaathaiyum paatthuttu, decide pannittu, nammakitta lead-ah vandhiruppaanga.", "So, ivangakitta product-oda features-ah kashtappattu sell pannanum appadindra maadhiri-laam oru avasiyamum kidaiyaadhu.", "Enna irukku, evlo-nu sonnaa podhum, kandippaa vaangirvaanga. Ivanga Definitely Buy category-kulla varuvaanga.", "Aanaa, innoru 60 percentage of people irukkaanga. Ivanga dhaan Confused Buyers.", "So, ivangalukku first indha product mela need irukkaa illaiyaa, yaarukitta vaanguradhu,", "and vaanginaa use pannuvaangalaa maattaangalaa,", "and ippo adhu avangalukku thevaiyaa illa future-la thevaiyaa, illa idhukku badhilaa avangalukku vera edhaavadhu thevaiyaa,", "indha maadhiri multiple confusions irukkum, and ivangalukku decision making-la oru help thevaippadum.", "And yaaraavadhu help pannaa mattum dhaan ivangalukku edhu thevai, thevai illai-ne decide panna mudiyum-ndra oru situation-la iruppaanga.", "Ivangalukkaaga dhaan sales appadindra oru vishayame exist aagudhu.", "Adhaavadhu, confusion-la irukkavangalukku clarity kodutthu, decision making-la help panradhukku."];
 /* SRT:END */
-
-const cue = n => C[n - 1];             // start of cue n (absolute seconds)
 const GY = 860;                         // ground line
 const TR = 0.7, TRW = 1.0;              // TRW: the diagonal wipes run a little longer so they stay smooth                         // transition length; the incoming scene starts TR before its cue
 // Spine object: one bar, 10 slots (1 figure = 10%), split 20 | 20 | 60
 const BAR = { x: 260, w: 1400, h: 64 };
-const SEG = [[0, 2], [2, 4], [4, 10]];  // slot ranges per group
+const SHARES = [0.2, 0.2, 0.6];          // spine bar shares (must sum to 1)
 const SLOT = i => BAR.x + 70 + 140 * i;
 const GROUP = ['NEVER BUY', 'DEFINITELY BUY', 'CONFUSED BUYERS'];
-
-/* ---------------- project-only drawing helpers ---------------- */
-/** The spine bar. col: [c0,c1,c2] segment colours; p: build 0..1; nums: 0..1 numbers; lab: [a0,a1,a2] label alphas. */
-function spineBar(g, p, col, nums = 1, lab = [0, 0, 0], o = {}) {
-  if (p <= 0) return;
-  const x0 = o.x ?? BAR.x, w = (o.w ?? BAR.w), y = o.y ?? GY, h = o.h ?? BAR.h, k = w / BAR.w;
-  const ws = [0.2, 0.2, 0.6].map(f => f * w), sp = E.out(clamp(p));
-  if (o.crack !== undefined && o.crack <= 0) { fillPoly(g, rrectPoly(x0 + 4 * k, y, (w - 8 * k) * sp, h, 14 * k), col[1]); return; }
-  const cr = o.crack === undefined ? 1 : clamp(o.crack), gap = 4 * k * E.back(cr), hop = o.crack === undefined ? 0 : -16 * Math.sin(Math.PI * cr);
-  let x = x0;
-  for (let s = 0; s < 3; s++) {
-    const segP = o.crack !== undefined ? 1 : o.grow !== undefined ? (s < 2 ? E.out(clamp(o.grow)) : 1) : prog(sp, s * 0.18, s * 0.18 + 0.55);
-    if (segP > 0) fillPoly(g, rrectPoly(x + gap, y + (s === 1 ? 0 : hop), (ws[s] - 2 * gap) * E.out(segP), h, 14 * k), col[s]);
-    const na = Array.isArray(nums) ? nums[s] : nums;
-    if (na > 0 && segP >= 1) {
-      g.save(); g.globalAlpha *= na; g.font = font('head', Math.round(40 * k)); g.fillStyle = PAL.cream; g.textAlign = 'center'; g.textBaseline = 'middle';
-      g.fillText(['20%', '20%', '60%'][s], x + ws[s] / 2, y + h / 2 + 2); g.restore();
-    }
-    if (lab[s] > 0 && !o.noLabels) subline(g, GROUP[s], x + ws[s] / 2, y + h + 52, lab[s], 0, { face: 'label', size: o.labSize || 30, align: 'center', color: col[s] === PAL.red ? PAL.red : PAL.ink });
-    x += ws[s];
-  }
-}
-/** Small corner reprise of the spine (top-right), one segment highlighted. */
-function miniBar(g, focus, p, tagText) {
-  if (p <= 0) return;
-  fadeAlpha(g, E.out(p), () => {
-    spineBar(g, 1, [0, 1, 2].map(i => i === focus ? PAL.red : rgba(PAL.ink, .85)), 0, [0, 0, 0], { x: 1300, y: 120, w: 480, h: 44, noLabels: true });
-    if (tagText) subline(g, tagText, 1300 + 480 * [0.1, 0.3, 0.7][focus], 210, 1, 0, { face: 'label', size: 26, align: 'center', color: PAL.red });
-  });
-}
-/** Screen prop (browser window): title bar in ink with cream title; body painted by fn(x, y, w, h). */
-function browserWin(g, x, y, w, h, title, p, fn) {
-  if (p <= 0) return;
-  const q = E.back(clamp(p));
-  popAt(g, x + w / 2, y + h / 2, q, () => {
-    fillPoly(g, rrectPoly(x - 8, y - 8, w + 16, h + 16, 26), PAL.ink);
-    fillPoly(g, rrectPoly(x, y + 56, w, h - 56, 18), PAL.cream);
-    g.fillStyle = PAL.cream; [0, 1, 2].forEach(i => { g.beginPath(); g.arc(x + 30 + i * 28, y + 26, 8, 0, 7); g.fill(); });
-    g.font = font('head', 30); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(title, x + w / 2, y + 28);
-    if (fn) fn(x, y + 56, w, h - 56);
-  });
-}
-/** Checklist row: text, then a red tick badge drawing on at p. */
-function checkRow(g, text, x, y, p, o = {}) {
-  if (p <= 0) return;
-  subline(g, text, x + 54, y + 13, prog(p, 0, .5), 0, { face: 'label', size: o.size || 34, color: PAL.ink });
-  g.save(); g.beginPath(); g.arc(x + 20, y, 20, 0, 7); g.lineWidth = 4; g.strokeStyle = rgba(PAL.ink, .35); g.stroke(); g.restore();
-  badge(g, x + 20, y, prog(p, .35, 1), 'tick', PAL.red, PAL.cream, 20);
-}
-/** A card with gray lines (a list of features) that can be crossed out. */
-function featureCard(g, x, y, p, crossP) {
-  if (p <= 0) return;
-  popAt(g, x + 170, y + 120, E.back(clamp(p)), () => {
-    fillPoly(g, rrectPoly(x, y, 340, 240, 22), PAL.cream);
-    g.save(); tracePoly(g, rrectPoly(x, y, 340, 240, 22)); g.lineWidth = 6; g.strokeStyle = PAL.ink; g.stroke(); g.restore();
-    g.font = font('head', 34); g.fillStyle = PAL.ink; g.textAlign = 'left'; g.fillText('FEATURES', x + 28, y + 58);
-    for (let i = 0; i < 3; i++) { fillPoly(g, rrectPoly(x + 28, y + 92 + i * 44, 22, 22, 11), PAL.gray); fillPoly(g, rrectPoly(x + 66, y + 95 + i * 44, 220 - i * 40, 16, 8), rgba(PAL.gray, .6)); }
-  });
-  crossMark(g, x + 170, y + 120, 120, crossP, 20);
-}
-/* ---------------- wearables: hats, glasses, bags (all drawn in code, palette only) ---------------- */
 const WEAR = ['bucket', 'capBack', 'specs', 'specs', 'beanie', 'bun', 'cap', 'none', 'bun', 'beanie']; // crowd slot -> look
-function wear(g, F, r, kinds) {
-  if (!r || !kinds) return; const list = [].concat(kinds).filter(k => k && k !== 'none'); if (!list.length) return;
-  const P = F.pose || POSES.stand, fac = F.facing || 1, s = F.s || 1, body = F.color || PAL.ink;
-  const dark = body === PAL.ink, hatC = dark ? PAL.gray : PAL.ink, ang = rad((P.head || 0) + (P.lean || 0) * .5) * fac;
-  g.save(); g.globalAlpha *= F.alpha ?? 1; g.translate(r.head[0], r.head[1]); g.rotate(ang); g.scale(s, s);
-  for (const k of list) {
-    if (k === 'cap' || k === 'capBack') { const d = k === 'cap' ? fac : -fac;
-      g.beginPath(); g.arc(0, -6, 39, Math.PI, 0); g.closePath(); g.fillStyle = hatC; g.fill();
-      fillPoly(g, rrectPoly(d > 0 ? 18 : -70, -14, 52, 11, 5), hatC); g.beginPath(); g.arc(0, -45, 5, 0, 7); g.fill(); }
-    if (k === 'beanie') { g.beginPath(); g.arc(0, -8, 40, Math.PI, 0); g.closePath(); g.fillStyle = hatC; g.fill();
-      fillPoly(g, rrectPoly(-42, -16, 84, 14, 6), hatC); g.fillStyle = PAL.cream; g.fillRect(-40, -12, 80, 3);
-      g.beginPath(); g.arc(0, -52, 11, 0, 7); g.fillStyle = hatC; g.fill(); }
-    if (k === 'bucket') { fillPoly(g, [[-28, -58], [28, -58], [36, -22], [-36, -22]], hatC); fillPoly(g, rrectPoly(-52, -26, 104, 12, 6), hatC); }
-    if (k === 'bun') { g.beginPath(); g.arc(-fac * 18, -40, 16, 0, 7); g.fillStyle = dark ? PAL.gray : PAL.ink; g.fill(); }
-    if (k === 'specs') { const ex = fac * 8, c = dark ? PAL.cream : PAL.ink; g.lineWidth = 4; g.strokeStyle = c;
-      [[ex - 9, -6], [ex + 11, -6]].forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 9.5, 0, 7); g.stroke(); });
-      g.beginPath(); g.moveTo(ex - 0.5, -7); g.lineTo(ex + 1.5, -7); g.moveTo(ex - (fac > 0 ? 18.5 : -20.5), -7); g.lineTo(-fac * 32, -12); g.stroke(); }
-  }
-  g.restore();
-}
-/** Any figure + its wearables (F.wear). */
-function person(g, F) {
-  const seed = F.seed ?? Math.round((F.x || 0) / 131), per = 3.4 + (seed % 5) * .37;
-  const blink = ((NOW + seed * .77) % per) < .13 && ['neutral', 'happy', 'confused'].includes(F.expr || 'neutral');
-  const r = drawStickman(g, blink ? Object.assign({}, F, { expr: 'closed' }) : F); wear(g, F, r, F.wear); return r;
-}
-/** Briefcase standing on the ground (SALES), or carried at a hand point. */
-function briefcase(g, x, y, s = 1, a = 1) {
-  if (a <= 0) return; fadeAlpha(g, a, () => {
-    g.save(); g.translate(x, y); g.scale(s, s);
-    g.lineWidth = 7; g.strokeStyle = PAL.ink; g.beginPath(); g.arc(0, -56, 14, Math.PI, 0); g.stroke();
-    fillPoly(g, rrectPoly(-42, -56, 84, 56, 10), PAL.ink); g.fillStyle = PAL.cream; g.fillRect(-42, -36, 84, 4); g.fillRect(-6, -40, 12, 10);
-    g.restore(); });
-}
-/** Shopping bag held at a hand point (the Definitely Buy purchase), product peeking out. */
-function shopBag(g, hx, hy, s = 1, q = 1) {
-  if (q <= 0) return; popAt(g, hx, hy, E.back(clamp(q)), () => {
-    g.save(); g.translate(hx, hy); g.scale(s, s);
-    fillPoly(g, rrectPoly(-18, 4, 30, 24, 4), PAL.ink); fillPoly(g, rrectPoly(-6, 4, 7, 24, 2), PAL.red);
-    fillPoly(g, [[-34, 22], [34, 22], [28, 92], [-28, 92]], PAL.cream);
-    tracePoly(g, [[-34, 22], [34, 22], [28, 92], [-28, 92]]); g.lineWidth = 6; g.strokeStyle = PAL.ink; g.stroke();
-    g.beginPath(); g.moveTo(-16, 22); g.quadraticCurveTo(0, -6, 16, 22); g.stroke();
-    g.restore(); });
-}
-
-/* ---------------- character kits: each group acts like the script describes it ---------------- */
-function neckOf(F, r) { const P = F.pose || POSES.stand, L = rad(P.lean || 0), fac = F.facing || 1, hd = (RIG.neck + RIG.head) * (F.s || 1);
-  return [r.head[0] - Math.sin(L) * hd * fac, r.head[1] + Math.cos(L) * hd]; }
-/** SALES: ink figure with a red tie (knot + blade follow the torso). */
-function salesman(g, F) {
-  const r = person(g, Object.assign({ color: PAL.ink }, F)); if ((F.draw ?? 1) < .6) return r;
-  const s = F.s || 1, n = neckOf(F, r), h = r.hip, L = Math.hypot(h[0] - n[0], h[1] - n[1]) || 1, ux = (h[0] - n[0]) / L, uy = (h[1] - n[1]) / L, px = -uy, py = ux;
-  const P = (a, b) => [n[0] + ux * a * s + px * b * s, n[1] + uy * a * s + py * b * s];
-  // follow-through: the blade swings a little around the knot, lagging the body (lean + a slow pendulum)
-  const sw = .07 * Math.sin(NOW * 2.4 + (F.seed || 0)) + ((F.pose && F.pose.lean) || 0) * .012 * (F.facing || 1);
-  const k = P(20, 0), rot = ([x, y]) => [k[0] + (x - k[0]) * Math.cos(sw) - (y - k[1]) * Math.sin(sw), k[1] + (x - k[0]) * Math.sin(sw) + (y - k[1]) * Math.cos(sw)];
-  g.save(); g.globalAlpha *= F.alpha ?? 1;
-  fillPoly(g, [P(8, -8), P(8, 8), P(20, 7), P(20, -7)], PAL.red);
-  fillPoly(g, [P(20, -6), P(20, 6), P(64, 12), P(80, 0), P(64, -12)].map(rot), PAL.red);
-  g.restore(); return r;
-}
-/** NEVER BUY: wears its hat; 'can't pay' is shown with an empty wallet (emptyWallet). */
-function neverBuyer(g, F) { return person(g, F); }
-/** DEFINITELY BUY: phone in hand with a ticked screen (already researched, already decided). */
-function sureBuyer(g, F, ph = 1) {
-  const r = person(g, F); if (ph <= 0) return r;
-  const s = F.s || 1, q = E.back(clamp(ph)), [hx, hy] = r.handF;
-  popAt(g, hx, hy - 18 * s, q, () => {
-    fillPoly(g, rrectPoly(hx - 17 * s, hy - 48 * s, 34 * s, 58 * s, 8 * s), PAL.ink);
-    fillPoly(g, rrectPoly(hx - 12 * s, hy - 42 * s, 24 * s, 42 * s, 4 * s), PAL.cream);
-    strokeOn(g, [[hx - 7 * s, hy - 22 * s], [hx - 2 * s, hy - 16 * s], [hx + 7 * s, hy - 29 * s]], prog(ph, .4, 1), PAL.red, 4 * s);
-  });
-  return r;
-}
-/** CONFUSED: pacing on the spot, turning left/right, alternating head-scratch and shrug. Returns {x, facing, pose}. */
-function pacing(x0, t, i, on = 1) {
-  const ph = t * 1.4 + i * 1.7, x = x0 + Math.sin(ph) * 18 * on, facing = Math.cos(ph) >= 0 ? 1 : -1;
-  const alt = .5 + .5 * Math.sin(t * 1.1 + i * 2.3);
-  return { x, facing, pose: poseMix(POSES.stand, poseMix(POSES.shrug, POSES.think, alt), on) };
-}
-/** A pitch: a speech bubble carrying a product (box with a red band). */
-function pitchBubble(g, x, y, s, col, a = 1) {
-  if (a <= 0) return;
-  fadeAlpha(g, a, () => {
-    g.beginPath(); g.arc(x, y, 38 * s, 0, 7); g.fillStyle = PAL.cream; g.fill(); g.lineWidth = 5; g.strokeStyle = col; g.stroke();
-    fillPoly(g, rrectPoly(x - 17 * s, y - 14 * s, 34 * s, 28 * s, 5 * s), col === PAL.gray ? PAL.gray : PAL.ink);
-    fillPoly(g, rrectPoly(x - 4 * s, y - 14 * s, 8 * s, 28 * s, 2), col === PAL.gray ? rgba(PAL.cream, .7) : PAL.red);
-  });
-}
-function linePts2(x0, y0, x1, y1) { const o = []; for (let i = 0; i < KN; i++) o.push([lerp(x0, x1, i / (KN - 1)), lerp(y0, y1, i / (KN - 1))]); return o; }
-
-/** A red X that lands like a rubber stamp. */
-function stampX(g, x, y, r, p) { if (p <= 0) return; const q = lerp(1.7, 1, E.out(clamp(p)));
-  fadeAlpha(g, clamp(p * 3), () => popAt(g, x, y, q, () => crossMark(g, x, y, r, 1, 20))); }
-
-let THREAD = [], THC = [930, 430]; const LYS = 430;
-/** Deterministic tangle (a knot of confusion) with N points; untangles into a straight arrow shaft. */
-const KN = 240;
-function knotPts(cx, cy, r) {
-  const o = [];
-  for (let i = 0; i < KN; i++) { const a = i / (KN - 1) * Math.PI * 10, rr = r * (0.55 + 0.45 * Math.sin(a * 1.37 + 0.8));
-    o.push([cx + Math.cos(a) * rr * 1.25, cy + Math.sin(a * 1.13) * rr * 0.8]); }
-  return o;
-}
-function linePts(x0, x1, y) { const o = []; for (let i = 0; i < KN; i++) o.push([lerp(x0, x1, i / (KN - 1)), y]); return o; }
-
-
-/* ---------------- Phase A props (script ideas drawn as objects) ---------------- */
-let NOW = 0;   // absolute time of the frame being drawn (set at the top of every scene draw); used for blinks
-/** Empty wallet held at a hand: opens, then tips upside down (nothing inside). */
-function emptyWallet(g, hx, hy, s, p, tip) {
-  if (p <= 0) return;
-  popAt(g, hx, hy, E.back(clamp(p)), () => {
-    g.save(); g.translate(hx, hy - 10 * s); g.rotate(-.2 + tip * 2.6); g.scale(s, s);
-    fillPoly(g, rrectPoly(-38, -26, 76, 52, 10), PAL.ink);
-    fillPoly(g, rrectPoly(-30, -18, 60, 30, 6), PAL.cream);
-    g.strokeStyle = rgba(PAL.ink, .35); g.lineWidth = 3; g.beginPath(); g.moveTo(-24, -4); g.lineTo(24, -4); g.stroke();
-    g.restore();
-  });
-}
-/** Shopping cart with the product sitting in it. */
-function cart(g, x, y, s, p) {
-  if (p <= 0) return;
-  popAt(g, x, y, E.back(clamp(p)), () => {
-    g.save(); g.translate(x, y); g.scale(s, s); g.lineCap = g.lineJoin = 'round';
-    fillPoly(g, rrectPoly(-28, -86, 46, 38, 6), PAL.ink); fillPoly(g, rrectPoly(-9, -86, 9, 38, 2), PAL.red);
-    g.strokeStyle = PAL.ink; g.lineWidth = 9;
-    g.beginPath(); g.moveTo(-96, -96); g.lineTo(-70, -96); g.lineTo(-52, -20); g.lineTo(52, -20); g.lineTo(66, -70); g.lineTo(-62, -70); g.stroke();
-    g.fillStyle = PAL.ink; [-38, 40].forEach(wx => { g.beginPath(); g.arc(wx, 4, 13, 0, 7); g.fill(); });
-    g.restore();
-  });
-}
-/** FEATURES scroll hanging from a hand, unrolled to length L. */
-function featureScroll(g, hx, hy, L) {
-  if (L <= 4) return; const w = 170, x = hx - w / 2;
-  fillPoly(g, rrectPoly(x, hy, w, L, 8), PAL.cream);
-  g.save(); tracePoly(g, rrectPoly(x, hy, w, L, 8)); g.lineWidth = 5; g.strokeStyle = PAL.ink; g.stroke(); g.restore();
-  g.save(); g.beginPath(); g.rect(x, hy, w, L); g.clip();
-  g.font = font('head', 26); g.fillStyle = PAL.ink; g.textAlign = 'center'; g.fillText('FEATURES', hx, hy + 44);
-  for (let k = 0; k < 8; k++) fillPoly(g, rrectPoly(x + 22, hy + 70 + k * 30, 126 - (k % 3) * 26, 12, 6), rgba(PAL.gray, .7));
-  g.restore();
-  fillPoly(g, rrectPoly(x - 14, hy - 10, w + 28, 20, 10), PAL.ink);
-  fillPoly(g, rrectPoly(x - 14, hy + L - 10, w + 28, 20, 10), PAL.ink);
-}
-/** Small picture for a question bubble (drawn inside a cream disc). */
-function qIcon(g, kind, x, y, p) {
-  if (p <= 0) return;
-  popAt(g, x, y, E.back(clamp(p)), () => {
-    g.beginPath(); g.arc(x, y, 34, 0, 7); g.fillStyle = PAL.cream; g.fill(); g.lineWidth = 5; g.strokeStyle = PAL.ink; g.stroke();
-    g.save(); g.translate(x, y); g.lineCap = g.lineJoin = 'round';
-    const box = (bx, by, c = PAL.ink) => { fillPoly(g, rrectPoly(bx - 12, by - 10, 24, 20, 4), c); };
-    if (kind === 'need') { box(-6, 6); g.font = font('head', 26); g.fillStyle = PAL.red; g.textAlign = 'center'; g.fillText('?', 14, -2); }
-    if (kind === 'whom') [-11, 11].forEach(sx => { fillPoly(g, [[sx - 9, 14], [sx + 9, 14], [sx + 9, -2], [sx, -12], [sx - 9, -2]], PAL.ink); g.fillStyle = PAL.cream; g.fillRect(sx - 3, 4, 6, 10); });
-    if (kind === 'use') { box(0, 8, PAL.gray); g.fillStyle = PAL.gray; [[-10, -12], [2, -18], [12, -10]].forEach(([dx, dy]) => { g.beginPath(); g.arc(dx, dy, 3, 0, 7); g.fill(); }); }
-    if (kind === 'when') { g.beginPath(); g.arc(0, 0, 18, 0, 7); g.lineWidth = 4; g.strokeStyle = PAL.ink; g.stroke(); g.beginPath(); g.moveTo(0, 0); g.lineTo(0, -12); g.moveTo(0, 0); g.lineTo(9, 4); g.stroke(); }
-    if (kind === 'else') { box(-11, 4); box(11, 4, PAL.gray); }
-    g.restore();
-  });
-}
-/** Question bubble with its picture on the left; a = emphasis (older questions dim). */
-function qBubble(g, text, x, y, tx, ty, p, icon, a = 1) {
-  if (p <= 0) return;
-  fadeAlpha(g, a, () => {
-    g.save(); g.font = font('label', 32); const w = g.measureText(text).width + 48; g.restore();
-    speechBubble(g, text, x + 22, y, tx, ty, p, { size: 32 });
-    qIcon(g, icon, x + 22 - w / 2 - 20, y, prog(p, .2, 1));
-  });
-}
-/** Thick straight band between two points (the thread becoming the bar). */
-function band(g, a, b, th, col) { const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L * th / 2, ny = dx / L * th / 2;
-  fillPoly(g, [[a[0] + nx, a[1] + ny], [b[0] + nx, b[1] + ny], [b[0] - nx, b[1] - ny], [a[0] - nx, a[1] - ny]], col); }
 
 function buildScenes() {
   const W = CONFIG.width, H = CONFIG.height;
@@ -265,35 +31,31 @@ function buildScenes() {
   SCENES = [
     /* 1. THE 20-20-60 SPLIT  (cues 1-3)  each group walks in acting its nature -> the bar splits -> first 20% = NEVER BUY */
     { id: 'split', start: 0, end: cue(4) - .001,
-      camera: t => tween([[0, { x: 0, y: 30, z: 1.06 }], [2.2, { x: 0, y: 0, z: 1 }], [cue(3) + .4, { x: 0, y: 0, z: 1 }], [cue(3) + 2.4, { x: -540, y: 80, z: 1.3 }]], t),
+      camera: t => tween([[0, { x: 0, y: 30, z: 1.06 }], [2.2, { x: 0, y: 0, z: 1 }], [wordAt(3, '20 percentage'), { x: -70, y: 20, z: 1.05 }], [wordAt(3, 'Never Buy') + .4, { x: -540, y: 80, z: 1.3 }]], t),
       draw(g, t, T, c) {
         NOW = t; dotGrid(g, c);
-        const red0 = prog(t, cue(3), cue(3) + .6);
+        const W20 = wordAt(3, '20 percentage'), WNB = wordAt(3, 'Never Buy'), red0 = prog(t, WNB, WNB + .5);
         world(g, c, () => {
           groundLine(g, GY, prog(t, 0, .8));
           const col = [red0 > .5 ? PAL.red : PAL.ink, rgba(PAL.ink, 1 - .55 * red0), rgba(PAL.ink, 1 - .55 * red0)];
-          const nA = prog(t, cue(2) + 1.0, cue(2) + 1.6), nOut = 1 - prog(t, cue(3) + .3, cue(3) + .8);
-          spineBar(g, prog(t, cue(2), cue(2) + 1.2), col, [nA, nA * nOut, nA * nOut], [prog(t, cue(3) + .3, cue(3) + 1.0), 0, 0], { crack: prog(t, cue(2) + .7, cue(2) + 1.3) });
+          const nA = prog(t, cue(2) + 1.0, cue(2) + 1.6), nOut = 1 - prog(t, W20 + .1, W20 + .5);
+          spineBar(g, prog(t, cue(2), cue(2) + 1.2), col, [nA, nA * nOut, nA * nOut], [prog(t, WNB, WNB + .6), 0, 0], { crack: prog(t, cue(2) + .7, cue(2) + 1.3) });
           for (let i = 0; i < 10; i++) {
             const x = SLOT(i), grp = i < 2 ? 0 : i < 4 ? 1 : 2;
-            // Definitely Buy stride in first, phones out; Confused overshoot and wander back; Never Buy trail in last, slouching
-            const kf = grp === 1 ? [[.1 + (i - 2) * .08, x - 1300], [1.5 + (i - 2) * .06, x, E.out]]
-                     : grp === 0 ? [[.5 + i * .12, x - 1300], [2.3 + i * .05, x, E.out]]
-                     : [[.15 + i * .08, x - 1300], [1.9 + i * .05, x + 46, E.out], [2.6 + i * .05, x, E.inOut]];
+            // nobody's kind is shown before it is spoken: all ten walk in alike; the Never Buy pair is revealed on "Never Buy"
+            const kf = [[.15 + i * .08, x - 1300], [1.9 + i * .05, x, E.out]];
             let rest = POSES.stand;
-            if (grp === 0) rest = poseMix(poseMix(POSES.stand, POSES.slump, .35), POSES.cross, E.inOut(prog(t, cue(3) + .4, cue(3) + 1.0)));
+            if (grp === 0) rest = poseMix(POSES.stand, POSES.cross, E.inOut(prog(t, WNB + .2, WNB + .8)));
             const w = walker(kf, t, .75, rest, 1);
-            let pose = w.pose, facing = w.facing, px = w.x;
-            if (grp === 2 && t > 2.8) { const on = .45 * prog(t, 2.8, 3.4), pc = pacing(x, t, i, on); px = pc.x; facing = on > .05 ? pc.facing : facing; pose = poseMix(pose, pc.pose, on); }
             const colr = grp === 0 ? (red0 > .5 ? PAL.red : PAL.ink) : rgba(PAL.ink, 1 - .55 * red0);
-            const F = { x: px, y: GY, s: .75, pose: idle(pose, t, i), facing, color: colr, seed: i, wear: WEAR[i],
-              expr: grp === 2 && t > 2.8 ? 'confused' : (grp === 1 ? 'happy' : 'neutral') };
-            if (grp === 1) sureBuyer(g, F, 1); else person(g, F);
+            const F = { x: w.x, y: GY, s: .75, pose: idle(w.pose, t, i), facing: w.facing, color: colr, seed: i, expr: 'neutral',
+              wear: grp === 0 && t > WNB + .2 ? WEAR[i] : null };
+            person(g, F);
           }
         });
         subline(g, 'Let me explain it with a diagram', 960, 210, prog(t, .3, .9), prog(t, cue(2) - .3, cue(2)), { align: 'center', size: 44, color: PAL.gray, face: 'label' });
-        fadeAlpha(g, 1 - prog(t, cue(3), cue(3) + .4), () => headline(g, 'THE 20-20-60 SPLIT', 960, 230, prog(t, cue(2), cue(2) + 1.1), { align: 'center', size: 96, red: [1] }));
-        headline(g, '20% NEVER BUY', 140, 230, prog(t, cue(3) + .3, cue(3) + 1.3), { size: 92, red: [1, 2] });
+        fadeAlpha(g, 1 - prog(t, W20 - .4, W20), () => headline(g, 'THE 20-20-60 SPLIT', 960, 230, prog(t, cue(2), cue(2) + 1.1), { align: 'center', size: 96, red: [1] }));
+        headlineWords(g, t, ['20%', 'NEVER', 'BUY'], [W20, WNB, WNB + .12], 140, 230, { size: 92, red: [1, 2] });
       } },
 
     /* 2. NEVER BUY  (cues 4-7)  nobody knows why they're here; no need, empty wallet; pitches bounce off; sales not needed */
@@ -377,7 +139,8 @@ function buildScenes() {
           // a small nod as each step is ticked
           const nod = rows.reduce((s, [, a]) => s + Math.sin(Math.PI * prog(t, a + .2, a + .6)) * 12, 0);
           pose = Object.assign({}, pose, { head: (pose.head || 0) + nod });
-          const hr3 = person(g, { x: w.x, y: GY, s: 1.15, pose: idle(pose, t, 3), facing: 1, color: PAL.red, seed: 3, expr: t > cue(12) + 1.3 ? 'happy' : 'neutral', wear: 'specs' });
+          const WDB = wordAt(8, 'Definitely Buy'), named = t > WDB;
+          const hr3 = person(g, { x: w.x, y: GY, s: 1.15, pose: idle(pose, t, 3), facing: 1, color: named ? PAL.red : PAL.ink, seed: 3, expr: t > cue(12) + 1.3 ? 'happy' : 'neutral', wear: named ? 'specs' : null });
           // purchase: the product flies from the PURCHASE button into the hero's hand, then the bag
           const fly = prog(t, cue(12) + .6, cue(12) + 1.3);
           if (fly > 0 && fly < 1) { const fx = lerp(SX + SW - 190, hr3.handF[0], E.inOut(fly)), fy = lerp(SY + SH - 60, hr3.handF[1], E.inOut(fly)) - Math.sin(Math.PI * fly) * 160;
@@ -401,8 +164,8 @@ function buildScenes() {
             });
           });
         });
-        miniBar(g, 1, prog(t, cue(8) + .4, cue(8) + 1.0));
-        fadeAlpha(g, 1 - prog(t, cue(9) - .3, cue(9)), () => headline(g, '20% DEFINITELY BUY', 140, 230, prog(t, cue(8) + .1, cue(8) + 1.1), { size: 84, red: [1, 2] }));
+        miniBar(g, 1, prog(t, wordAt(8, 'Definitely Buy'), wordAt(8, 'Definitely Buy') + .6));
+        fadeAlpha(g, 1 - prog(t, cue(9) - .3, cue(9)), () => headlineWords(g, t, ['20%', 'DEFINITELY', 'BUY'], [wordAt(8, '20 percentage'), wordAt(8, 'Definitely Buy'), wordAt(8, 'Definitely Buy') + .12], 140, 230, { size: 84, red: [1, 2] }));
         headline(g, 'LIKE AMAZON BUYERS', 140, 230, prog(t, cue(9) + .1, cue(9) + 1.1), { size: 72, red: [1], maxW: 760 });
         tag(g, 'NOT JUST CART', 300, 610, prog(t, cue(10) + .9, cue(10) + 1.3) * (1 - prog(t, cue(11) - .4, cue(11))), { size: 28 });
       } },
@@ -453,8 +216,8 @@ function buildScenes() {
           featureScroll(g, ur.handF[0] - 95, ur.handF[1] + 10, L);
           crossMark(g, ur.handF[0] - 95, ur.handF[1] + 170, 70, prog(t, cue(15) + 1.8, cue(15) + 2.3) * (1 - prog(t, cue(15) + 2.8, cue(15) + 3.0)), 16);
           // what + how much, then a handshake
-          speechBubble(g, 'WHAT IT IS', 1660, 320, ur.head[0] + 10, ur.head[1] - 30, prog(t, cue(16) + .2, cue(16) + .6) * (1 - prog(t, cue(16) + 2.0, cue(16) + 2.3)), { size: 34 });
-          speechBubble(g, 'HOW MUCH', 1500, 405, ur.head[0] - 30, ur.head[1] - 30, prog(t, cue(16) + 1.2, cue(16) + 1.6) * (1 - prog(t, cue(16) + 2.0, cue(16) + 2.3)), { size: 34 });
+          speechBubble(g, 'WHAT WE HAVE', 1640, 320, ur.head[0] + 10, ur.head[1] - 30, prog(t, cue(16) + .2, cue(16) + .6) * (1 - prog(t, cue(16) + 2.0, cue(16) + 2.3)), { size: 34 });
+          speechBubble(g, 'THIS IS THE PRICE', 1450, 405, ur.head[0] - 30, ur.head[1] - 30, prog(t, cue(16) + 1.2, cue(16) + 1.6) * (1 - prog(t, cue(16) + 2.0, cue(16) + 2.3)), { size: 34 });
           const shake = prog(t, cue(16) + 2.6, cue(16) + 2.8);
           if (shake > 0) { const mx = (hr.handF[0] + ur.handF[0]) / 2, my = (hr.handF[1] + ur.handF[1]) / 2 + Math.sin(t * 18) * 5 * (1 - prog(t, cue(16) + 3.6, cue(16) + 3.8));
             g.beginPath(); g.arc(mx, my, 14 * E.back(shake), 0, 7); g.fillStyle = PAL.ink; g.fill();
@@ -468,7 +231,7 @@ function buildScenes() {
         fadeAlpha(g, hA(cue(15) - .3, cue(15)), () => headline(g, 'THEY COME AS A LEAD', 140, 230, prog(t, cue(14) + 2.3, cue(14) + 3.2), { size: 80, red: [4] }));
         fadeAlpha(g, hA(cue(16) - .3, cue(16)), () => headline(g, 'NO NEED TO SELL FEATURES', 140, 230, prog(t, cue(15) + .1, cue(15) + 1.0), { size: 72, red: [4], maxW: 1150 }));
         headline(g, "THEY'LL SURELY BUY", 140, 230, prog(t, cue(16) + .1, cue(16) + 1.0), { size: 80, red: [1] });
-        tag(g, 'DEFINITELY BUY', 960, 990, prog(t, cue(16) + 3.6, cue(16) + 4.1), { size: 34 });
+        tag(g, 'DEFINITELY BUY', 960, 990, prog(t, wordAt(16, 'Definitely Buy'), wordAt(16, 'Definitely Buy') + .5), { size: 34 });
       } },
 
     /* 5. CONFUSED BUYERS  (cues 17-20)  the bar returns; the 60% light up and pace; five questions with pictures */
@@ -477,20 +240,21 @@ function buildScenes() {
         [cue(18) + 1.2, { x: 40, y: 30, z: 1.06 }], [cue(20), { x: 120, y: 30, z: 1.06 }], [cue(21), { x: 60, y: 20, z: 1.03 }]], a); },
       draw(g, t0, T, c) {
         const t = t0 + cue(17) - TRW; NOW = t; dotGrid(g, c);
-        const r6 = prog(t, cue(17), cue(17) + .6);
+        const W60 = wordAt(17, '60 percentage'), WCB = wordAt(17, 'Confused Buyers'), r6 = prog(t, W60, W60 + 1.0), rc = prog(t, WCB, WCB + .5);
         world(g, c, () => {
           groundLine(g, GY, 1);
           const labA = 1 - prog(t, cue(18) - .4, cue(18));
-          spineBar(g, 1, [rgba(PAL.gray, .9), rgba(PAL.gray, .9), r6 > .5 ? PAL.red : PAL.ink], 1, [labA, labA, prog(t, cue(17) + .3, cue(17) + 1.0) * labA]);
+          spineBar(g, 1, [rgba(PAL.gray, .9), rgba(PAL.gray, .9), PAL.ink], 1, [labA, labA, 0]);
+          if (r6 > 0) fadeAlpha(g, E.inOut(r6), () => spineBar(g, 1, [rgba(PAL.gray, .9), rgba(PAL.gray, .9), PAL.red], 1, [labA, labA, prog(t, WCB, WCB + .6) * labA]));   // 60% cross-fades to red
           const heads = [];
           const QT = [[cue(18) + .1, 4], [cue(18) + 2.6, 6], [cue(19) + .1, 8], [cue(20) + .1, 5], [cue(20) + 2.1, 9]];
           const focal = (QT.filter(([a]) => t >= a).pop() || [0, -1])[1];
           for (let i = 0; i < 10; i++) {
-            const conf = i >= 4, on = conf ? E.inOut(prog(t, cue(17) + .4 + (i - 4) * .1, cue(17) + 1.0 + (i - 4) * .1)) : 0;
+            const conf = i >= 4, on = conf ? E.inOut(prog(t, WCB + (i - 4) * .08, WCB + .6 + (i - 4) * .08)) : 0;
             const amp = focal < 0 ? 1 : (i === focal ? 1 : .35);            // ambient for the rest, full motion for the speaker
             const pc = pacing(SLOT(i), t, i, on * amp);
             const F = { x: conf ? pc.x : SLOT(i), y: GY, s: .75, pose: idle(conf ? pc.pose : (i < 2 ? POSES.cross : POSES.stand), t, i), facing: conf ? pc.facing : 1, seed: i,
-              color: conf ? (r6 > .5 ? PAL.red : PAL.ink) : rgba(PAL.gray, .9), expr: conf && t > cue(17) + .5 ? 'confused' : 'neutral', wear: WEAR[i] };
+              color: conf ? (on > .5 ? PAL.red : PAL.ink) : rgba(PAL.gray, .9), expr: conf && on > .5 ? 'confused' : 'neutral', wear: !conf || on > .5 ? WEAR[i] : null };
             const r = conf ? person(g, F) : (i < 2 ? neverBuyer(g, F) : sureBuyer(g, F, 1));
             heads.push(r.head);
           }
@@ -503,7 +267,7 @@ function buildScenes() {
             qBubble(g, s, qx, qy, heads[i][0], heads[i][1] - 30, prog(t, a, a + .45) * (1 - col), ic, dim);
           });
         });
-        headline(g, '60% CONFUSED BUYERS', 140, 230, prog(t, cue(17) + .1, cue(17) + 1.1), { size: 84, red: [1, 2] });
+        headlineWords(g, t, ['60%', 'CONFUSED', 'BUYERS'], [W60, WCB, WCB + .12], 140, 230, { size: 84, red: [1, 2] });
       } },
 
     /* 6. WHY SALES EXISTS  (cues 21-24)  one tangled thread -> SALES takes the loose end and pulls -> loops come undone from his end
@@ -561,9 +325,9 @@ function buildScenes() {
           // the six (drawn after the band so it passes behind them); they hop when the bar lands
           const heads = [];
           for (let i = 0; i < 6; i++) {
-            const calm = E.inOut(prog(t, cue(24) + .1 + i * .08, cue(24) + .7 + i * .08)), pc = pacing(660 + i * 118, t, i, (1 - calm) * .45);
+            const calm = E.inOut(prog(t, cue(24) + .1 + i * .08, cue(24) + .7 + i * .08)), pc = pacing(658 + i * 108, t, i, (1 - calm) * .45);
             const hop = 34 * Math.sin(Math.PI * prog(t, land + i * .05, land + .45 + i * .05));
-            const pose = poseMix(pc.pose, i % 2 ? POSES.cheer : POSES.stand, calm);
+            const pose = poseMix(poseMix(pc.pose, i % 2 ? POSES.cheer : POSES.stand, calm), POSES.cheer, E.inOut(prog(t, land + .3, land + .8)));   // all arms up once they stand on the bar
             const r = person(g, { x: pc.x, y: GY - hop, s: S, pose: idle(pose, t, i), facing: calm > .5 ? 1 : pc.facing, seed: 10 + i, color: PAL.red, expr: clear ? 'happy' : 'confused', wear: WEAR[4 + i] });
             heads.push(r.head);
           }
@@ -598,19 +362,19 @@ function buildScenes() {
   STORYBOARD = [
     { t: 1.6, title: 'Cue 1: buyers walk in' },
     { t: cue(3) - .3, title: 'Cue 2: the bar splits 20 | 20 | 60' },
-    { t: cue(4) - .5, title: 'Cue 3: first 20% = Never Buy' },
+    { t: cue(4) - 1.0, title: 'Cue 3: first 20% = Never Buy' },
     { t: cue(5) - .4, title: 'Cue 4: why are they here?' },
     { t: cue(7) - .5, title: 'Cues 5-6: no need, empty wallet, pitches bounce off' },
-    { t: cue(8) - .8, title: 'Cue 7: sales not needed' },
+    { t: cue(8) - 1.3, title: 'Cue 7: sales not needed' },
     { t: cue(9) - .3, title: 'Cue 8: 20% Definitely Buy' },
     { t: cue(12) - .3, title: 'Cues 9-11: like an Amazon buyer' },
-    { t: cue(13) - .8, title: 'Cue 12: purchase, done' },
+    { t: cue(13) - 1.0, title: 'Cue 12: purchase, done' },
     { t: cue(14) + 1.0, title: 'Cue 13: our website, about us' },
     { t: cue(15) - .6, title: 'Cue 14: they come as a lead' },
     { t: cue(16) - .4, title: 'Cue 15: no need to sell features' },
-    { t: cue(17) - .8, title: 'Cue 16: what + how much → buy' },
+    { t: cue(17) - 1.3, title: 'Cue 16: what we have + the price → buy' },
     { t: cue(18) - .4, title: 'Cue 17: 60% confused buyers' },
-    { t: cue(21) - .8, title: 'Cues 18-20: their five questions' },
+    { t: cue(21) - 1.1, title: 'Cues 18-20: their five questions' },
     { t: cue(22) - .4, title: 'Cue 21: so many confusions' },
     { t: cue(23) - .4, title: 'Cue 22: help arrives' },
     { t: cue(25) - .3, title: 'Cues 23-24: why sales exists' },

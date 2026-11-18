@@ -116,3 +116,19 @@ The ending (cues 21–24) is one continuous thread: it draws on as a coil, SALES
 from his end (two small tugs), the straight thread is released, levels to the 60% width, sinks behind the group, and
 lands under their feet as the red 60% segment while the gray 20% segments slide in. A 30 fps frame-difference check
 over all 3111 frames finds no jumps (the two diagonal wipes were lengthened to 1.0 s for this).
+
+## 8. Built with the stickman-srt-video skill (master flow)
+
+This video is now built by `.claude/skills/stickman-srt-video` (kit.js + this scenes.js):
+
+```bash
+python .claude/skills/stickman-srt-video/assets/build_video.py --scenes videos/20-20-60-split/scenes.js --out videos/20-20-60-split/the-20-20-60-split-review.html --title "20-20-60 Storyboard Review" --file-name the-20-20-60-split --duration 103.728 --mode review --music off --sfx on
+```
+
+```bash
+python .claude/skills/stickman-srt-video/assets/build_video.py --scenes videos/20-20-60-split/scenes.js --out videos/20-20-60-split/the-20-20-60-split.html --title "The 20-20-60 Split" --file-name the-20-20-60-split --duration 103.728 --mode player --music off --sfx on --voiceover on
+```
+
+Word-timed reveals: each group's colour, accessories, label and headline appear on its spoken name
+(`wordAt`: Never Buy ≈ 8.7 s, Definitely Buy ≈ 28.6 s, 60 percentage ≈ 69.3 s, Confused Buyers ≈ 72.4 s).
+At 1:04 the salesman says "WHAT WE HAVE" and "THIS IS THE PRICE". The final group stands inside the 60% segment.
